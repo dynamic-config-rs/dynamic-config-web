@@ -1,0 +1,269 @@
+name: CI
+
+# No push trigger for `dev`: everything on dev travels through a pull
+# request anyway, and a push run would twin the PR run on the same commit —
+# under *required* checks, a deduplicating cancellation poisons the gate.
+# `main` keeps its push trigger because a rebase-merge mints a new SHA that
+# no PR run ever checked.
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+  RUSTFLAGS: -D warnings
+  RUST_BACKTRACE: 1
+
+jobs:
+  # What changed, so the expensive jobs below can sit out a run that cannot
+  # affect them. Deliberately a *job* rather than `on.pull_request.paths`:
+  # a workflow filtered out at the trigger never reports at all, and a
+  # required check that never reports leaves the pull request waiting for
+  # ever. A skipped job, by contrast, passes the gate — `ci-ok` reads
+  # `skipped` as success, which the `supply-chain` job in security.yml has
+  # relied on since it was written.
+  # Filtering applies to pull requests only. A push to `main` and a manual
+  # dispatch run everything: `main` is what releases from, and a manual
+  # dispatch has no base commit for a path filter to compare against.
+  changes:
+    name: what changed
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      rust: ${{ steps.filter.outputs.rust }}
+      docs: ${{ steps.filter.outputs.docs }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d # v4
+        id: filter
+        with:
+          filters: |
+            rust:
+              - '**/*.rs'
+              - '**/Cargo.toml'
+              - 'Cargo.lock'
+              - 'rustfmt.toml'
+              - 'deny.toml'
+              - '.github/workflows/**'
+            docs:
+              - '**/*.md'
+              - '.github/workflows/**'
+
+  fmt:
+    needs: [changes]
+    if: needs.changes.outputs.rust == 'true' || github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772 # master
+        with:
+          toolchain: stable
+          components: rustfmt
+      - run: cargo fmt --all -- --check
+
+  clippy:
+    needs: [changes]
+    if: needs.changes.outputs.rust == 'true' || github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772 # master
+        with:
+          toolchain: stable
+          components: clippy
+      # A shared key across the read-only cargo jobs: `clippy`, `docs` and
+      # `minimal-versions` build the same graph, and three private caches
+      # is three cold starts for one dependency tree.
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2
+        with:
+          shared-key: check
+      - run: cargo clippy --workspace --all-targets --all-features -- -D warnings
+      - run: cargo clippy --workspace --all-targets --no-default-features -- -D warnings
+
+  test:
+    needs: [changes]
+    if: needs.changes.outputs.rust == 'true' || github.event_name != 'pull_request'
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772 # master
+        with:
+          toolchain: stable
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2
+      - run: cargo test --workspace
+      # And again in one thread. A configuration lives in a process-wide
+      # static keyed by `TypeId`, so two tests sharing a section type race
+      # in parallel and pass alone — this suite has already been bitten by
+      # exactly that, and both orders have to be green.
+      - if: runner.os == 'Linux'
+        run: cargo test --workspace -- --test-threads=1
+
+  examples:
+    needs: [changes]
+    if: needs.changes.outputs.rust == 'true' || github.event_name != 'pull_request'
+    name: both examples run
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772 # master
+        with:
+          toolchain: stable
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2
+      # An example that only compiles is not an example. Each writes into a
+      # temporary directory and needs no setup.
+      - run: cargo run -p dynamic-config-axum --example two_sections
+      - run: cargo run -p dynamic-config-actix --example two_sections
+
+  msrv:
+    needs: [changes]
+    if: needs.changes.outputs.rust == 'true' || github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        # One row per crate, at the floor its own manifest declares. A
+        # floor nobody compiles against is a number in a manifest rather
+        # than a promise — and these three differ by seventeen releases,
+        # which is the whole reason they are separate crates.
+        include:
+          - { rust: "1.71", package: dynamic-config-web-core }
+          - { rust: "1.80", package: dynamic-config-axum }
+          - { rust: "1.88", package: dynamic-config-actix }
+          - { rust: "1.94", package: dynamic-config-loco }
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772 # master
+        with:
+          toolchain: stable
+      # A lockfile resolved by stable, then checked by the floor: a floor
+      # that only holds against an old lockfile is not the floor a user
+      # gets from `cargo add`.
+      - run: cargo generate-lockfile
+      - uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772 # master
+        with:
+          toolchain: ${{ matrix.rust }}
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2
+        with:
+          shared-key: msrv-${{ matrix.rust }}
+      - run: cargo check -p ${{ matrix.package }} --locked --all-targets
+
+  docs:
+    needs: [changes]
+    if: needs.changes.outputs.rust == 'true' || github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      RUSTDOCFLAGS: -D warnings --cfg docsrs
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772 # master
+        with:
+          toolchain: nightly
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2
+        with:
+          shared-key: check
+      - run: cargo doc --workspace --all-features --no-deps
+
+  minimal-versions:
+    needs: [changes]
+    if: needs.changes.outputs.rust == 'true' || github.event_name != 'pull_request'
+    name: the declared minimums resolve
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772 # master
+        with:
+          toolchain: nightly
+      - uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772 # master
+        with:
+          toolchain: stable
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2
+        with:
+          shared-key: minimal
+      # `axum = "0.8"` claims 0.8.0 works. This is what checks it.
+      - run: cargo +nightly generate-lockfile -Z direct-minimal-versions
+      - run: cargo +stable check --workspace --all-features --locked
+
+  docs-links:
+    needs: [changes]
+    if: needs.changes.outputs.docs == 'true' || github.event_name != 'pull_request'
+    name: documentation links resolve
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: lycheeverse/lychee-action@e7477775783ea5526144ba13e8db5eec57747ce8 # v2
+        with:
+          args: >-
+            --no-progress
+            --include-fragments
+            --max-retries 3
+            --retry-wait-time 5
+            --exclude '^https://github\.com/dynamic-config-rs/'
+            --exclude '^https://dynamic-config-rs\.github\.io'
+            --exclude '^https://docs\.rs/dynamic-config-a'
+            --exclude '^https://crates\.io/crates/dynamic-config-a'
+            README.md CONTRIBUTING.md SECURITY.md AGENTS.md CHANGELOG.md
+            dynamic-config-*/README.md
+          fail: true
+
+  # Always runs: linting the workflows is what catches a mistake in the
+  # filtering above, so it must not be filtered by it.
+  actionlint:
+    name: workflows lint clean
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: raven-actions/actionlint@3d39aea434753780c3b3d4a1a31c854b4dbf49d7 # v2
+
+  # The one status branch protection requires. Requiring every job by name
+  # breaks the moment a matrix row is renamed; requiring this gate never
+  # does. `if: always()` because a gate that is skipped when a dependency
+  # fails would count as "not failed" and wave the merge through.
+  #
+  # A *skipped* job passes, which is what makes the `changes` filtering
+  # above safe: the case below matches `failure` and `cancelled` only.
+  ci-ok:
+    name: CI is green
+    needs:
+      - changes
+      - fmt
+      - clippy
+      - test
+      - examples
+      - msrv
+      - docs
+      - minimal-versions
+      - docs-links
+      - actionlint
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: every job this gate needs has succeeded
+        run: |
+          results='${{ toJSON(needs.*.result) }}'
+          echo "$results"
+          case "$results" in
+            *failure*|*cancelled*) exit 1 ;;
+          esac

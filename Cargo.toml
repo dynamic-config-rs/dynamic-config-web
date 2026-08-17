@@ -1,0 +1,53 @@
+# The request scope for a Rust web service.
+#
+# Four crates on one version: the framework-free half, one translation of
+# it per framework, and Loco — which is axum underneath, so that one is the
+# axum crate plus the initializer Loco asks a library for.
+#
+# `cargo release` moves them together: a change to the snapshot is a change
+# to every adapter, and a version gap between them is a combination nobody
+# built.
+#
+# The engine comes from crates.io, named with a caret, for the same reason
+# the store crates give: an integration built against `dynamic-config 0.6`
+# keeps working when the engine ships 0.6.3, and neither repository waits
+# for the other.
+[workspace]
+resolver = "2"
+members = [
+    "dynamic-config-web-core",
+    "dynamic-config-axum",
+    "dynamic-config-actix",
+    "dynamic-config-loco",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+# The floor `dynamic-config-web-core` actually has — it names no framework
+# and no engine type, only `Arc<T>` — so it must never be the thing that
+# raises a dependent's floor. Each framework crate declares its own, higher,
+# because an adapter pays for what it pulls in.
+rust-version = "1.71"
+license = "MIT"
+repository = "https://github.com/dynamic-config-rs/dynamic-config-web"
+homepage = "https://github.com/dynamic-config-rs/dynamic-config-web"
+authors = ["Cevat Batuhan Tolon <cevatbatuhan.tolon@gmail.com>"]
+categories = ["web-programming", "config"]
+keywords = ["config", "hot-reload", "axum", "actix-web", "middleware"]
+# Tests only. The examples *do* ship: each is self-contained — it writes
+# its own document into a temporary directory — so an example in the
+# package is one a reader can run, and docs.rs links it.
+exclude = ["tests/**"]
+
+[workspace.dependencies]
+# The engine, from crates.io. Caret: these crates are chosen *alongside* the
+# engine, and an exact pin would turn an engine upgrade into a wall.
+dynamic-config = { version = "0.6", default-features = false }
+# The shared half. Published because cargo will not let a published crate
+# depend on one that is not; exact, because it moves with them in one
+# release.
+dynamic-config-web-core = { version = "=0.1.0", path = "dynamic-config-web-core" }
+# The Loco crate is the axum one plus an `Initializer`, so it names it
+# the same way: exact, and moving in the same release.
+dynamic-config-axum = { version = "=0.1.0", path = "dynamic-config-axum" }

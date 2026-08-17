@@ -1,0 +1,14 @@
+# Advisories the OSV scan reports that this repository has already decided
+# about, with the decision here rather than in a job's output.
+#
+# Every entry names the reason and what would make it expire. An advisory
+# with a *reachable* fix never belongs here — it belongs in a dependency
+# bump. Neither does one with no fix at all: `scripts/audit-report.py`
+# reports those as warnings so they stay visible every run.
+#
+# What is left is the narrow case that would otherwise stop a pull request
+# for something nobody here can do: a fix exists and something upstream pins
+# the version out of reach.
+#
+# Empty, and expected to stay small: these crates have four direct
+# dependencies between them.

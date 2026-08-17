@@ -1,0 +1,38 @@
+[package]
+name = "dynamic-config-axum"
+version.workspace = true
+edition.workspace = true
+# Measured, not copied: `cargo +1.76 check` fails with "axum-core requires
+# rustc 1.78 or newer", and 1.80 is the first toolchain above that which
+# builds the whole graph. It is also the number `dynamic-config-server`
+# arrived at for axum 0.8.
+rust-version = "1.80"
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+authors.workspace = true
+categories.workspace = true
+keywords = ["config", "hot-reload", "axum", "tower", "middleware"]
+description = "A request-scoped dynamic-config snapshot for axum: one layer, one extractor"
+documentation = "https://docs.rs/dynamic-config-axum"
+readme = "README.md"
+exclude.workspace = true
+
+[dependencies]
+dynamic-config-web-core = { workspace = true }
+axum = { version = "0.8", default-features = false }
+tower = { version = "0.5", default-features = false }
+
+[dev-dependencies]
+dynamic-config = { workspace = true, features = ["json", "watch"] }
+axum = { version = "0.8", features = ["json", "tokio", "http1"] }
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "time"] }
+tower = { version = "0.5", features = ["util"] }
+serde = { version = "1", features = ["derive"] }
+http-body-util = "0.1"
+tempfile = "3"
+serde_json = "1"
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]

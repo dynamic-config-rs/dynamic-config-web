@@ -1,0 +1,26 @@
+[package]
+name = "dynamic-config-web-core"
+version.workspace = true
+edition.workspace = true
+# The workspace floor, unchanged. This crate holds `std` and nothing else,
+# so it must never be the reason an adapter's floor moves.
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+authors.workspace = true
+categories.workspace = true
+keywords.workspace = true
+description = "The request-scoped configuration snapshot shared by the dynamic-config web integrations"
+documentation = "https://docs.rs/dynamic-config-web-core"
+readme = "README.md"
+exclude.workspace = true
+
+# None. Not even the engine: this crate never names a configuration type,
+# only `Arc<T>` — which is what lets it be tested without one, and what
+# keeps its floor at the workspace's.
+[dependencies]
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]

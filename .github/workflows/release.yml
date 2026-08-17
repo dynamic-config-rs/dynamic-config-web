@@ -1,0 +1,173 @@
+name: Release
+
+# Merging a version bump into `main` IS the release. Every push to `main`
+# lands here; `decide` checks whether the workspace version is new, and
+# everything downstream is skipped when it is not — so a docs merge is a
+# green no-op and a version bump publishes.
+#
+# The tag is an *output* of a successful publish, minted at the merge
+# commit. Since `main` only accepts pull requests that passed the gates, a
+# release inherits the whole review pipeline by construction.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  decide:
+    name: is this a release?
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      version: ${{ steps.check.outputs.version }}
+      release: ${{ steps.check.outputs.release }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - id: check
+        run: |
+          version=$(grep -m1 '^version' Cargo.toml | cut -d'"' -f2)
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+          if git ls-remote --exit-code --tags origin "refs/tags/v$version" >/dev/null 2>&1; then
+            echo "v$version is already tagged — nothing to release."
+            echo "release=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "v$version is new — this push is a release."
+            echo "release=true" >> "$GITHUB_OUTPUT"
+          fi
+
+  verify:
+    name: verify before publishing
+    needs: [decide]
+    if: needs.decide.outputs.release == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772 # master
+        with:
+          toolchain: stable
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2
+      - name: the changelog names this version
+        env:
+          VERSION: ${{ needs.decide.outputs.version }}
+        run: |
+          grep -q "^## $VERSION " CHANGELOG.md || {
+            echo "::error::CHANGELOG.md has no section for $VERSION"
+            exit 1
+          }
+      - run: cargo fmt --all -- --check
+      - run: cargo clippy --workspace --all-targets --all-features -- -D warnings
+      - run: cargo test --workspace
+      # Only against what is already published: a first release has nothing
+      # to compare with, and `--exclude` is derived rather than hardcoded so
+      # the list cannot go stale.
+      - uses: taiki-e/install-action@7f4eb899022d8fe70b20c4f3de697aa85c309026 # v2
+        with:
+          tool: cargo-semver-checks
+      - name: semver against what is on crates.io
+        run: |
+          set -euo pipefail
+          excludes=()
+
+          for crate in dynamic-config-web-core dynamic-config-axum \
+                       dynamic-config-actix dynamic-config-loco; do
+            code=$(curl -s -o /dev/null -w '%{http_code}' \
+              "https://crates.io/api/v1/crates/$crate")
+
+            case "$code" in
+              404) echo "$crate is unpublished — excluded"; excludes+=(--exclude "$crate") ;;
+              200) echo "$crate is published — checked" ;;
+              *)   echo "::error::crates.io answered $code for $crate"; exit 1 ;;
+            esac
+          done
+
+          if [ ${#excludes[@]} -eq 4 ]; then
+            echo "nothing published yet; no baseline to check against"
+            exit 0
+          fi
+
+          cargo semver-checks --workspace "${excludes[@]}"
+
+  publish:
+    name: publish to crates.io
+    needs: [decide, verify]
+    if: needs.decide.outputs.release == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: crates-io
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772 # master
+        with:
+          toolchain: stable
+      - name: publish, in dependency order
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          publish() {
+            local crate=$1
+            echo "── $crate"
+            # An "already uploaded" is a rerun after a partial failure, not
+            # an error: a version on crates.io is permanent, so the only way
+            # forward is to publish the remainder.
+            if ! output=$(cargo publish -p "$crate" --no-verify 2>&1); then
+              case "$output" in
+                *"already uploaded"*|*"already exists"*)
+                  echo "already published — skipping" ;;
+                *) echo "$output"; return 1 ;;
+              esac
+            fi
+          }
+
+          # The core first: both adapters name it exactly, and crates.io
+          # needs it to exist before it will take them.
+          publish dynamic-config-web-core
+          sleep 45
+          publish dynamic-config-axum
+          publish dynamic-config-actix
+          # Loco names the axum crate exactly, so it waits for it.
+          sleep 45
+          publish dynamic-config-loco
+
+  tag-and-release:
+    name: tag and GitHub release
+    needs: [decide, publish]
+    if: needs.decide.outputs.release == 'true' && needs.publish.result == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - name: tag the release
+        env:
+          VERSION: ${{ needs.decide.outputs.version }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -a "v$VERSION" -m "dynamic-config-web $VERSION" "$GITHUB_SHA"
+          git push origin "v$VERSION"
+      - name: notes from the changelog
+        env:
+          VERSION: ${{ needs.decide.outputs.version }}
+        run: |
+          awk -v v="$VERSION" '
+            $0 ~ "^## " v " " || $0 ~ "^## " v "$" { found = 1; next }
+            found && /^## /  { exit }
+            found            { print }
+          ' CHANGELOG.md > release-notes.md
+
+          echo "--- notes ---"
+          cat release-notes.md
+      - uses: softprops/action-gh-release@3d0d9888cb7fd7b750713d6e236d1fcb99157228 # v3
+        with:
+          tag_name: v${{ needs.decide.outputs.version }}
+          name: v${{ needs.decide.outputs.version }}
+          body_path: release-notes.md

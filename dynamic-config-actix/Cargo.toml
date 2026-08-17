@@ -1,0 +1,40 @@
+[package]
+name = "dynamic-config-actix"
+version.workspace = true
+edition.workspace = true
+# What a fresh `cargo add dynamic-config-actix` actually needs today,
+# measured rather than copied: this crate's own code compiles on far less,
+# but the resolver takes actix-web 4.14, which declares 1.88 — and so do
+# `actix-http`, `actix-server` and the `icu_*` crates url pulls in.
+#
+# A number lower than that would be true only of a lockfile pinned to an
+# older actix-web, and a floor nobody's default resolution reaches is a
+# number in a manifest rather than a promise.
+rust-version = "1.88"
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+authors.workspace = true
+categories.workspace = true
+keywords = ["config", "hot-reload", "actix-web", "middleware", "extractor"]
+description = "A request-scoped dynamic-config snapshot for Actix Web: one middleware, one extractor"
+documentation = "https://docs.rs/dynamic-config-actix"
+readme = "README.md"
+exclude.workspace = true
+
+[dependencies]
+dynamic-config-web-core = { workspace = true }
+# 4.9 is what the engine's own example is written against. A floor rather
+# than a pin: 4.x has not moved this seam since it existed.
+actix-web = { version = "4.9", default-features = false }
+
+[dev-dependencies]
+dynamic-config = { workspace = true, features = ["json", "watch"] }
+actix-web = "4.9"
+actix-http = "3"
+serde = { version = "1", features = ["derive"] }
+tempfile = "3"
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]

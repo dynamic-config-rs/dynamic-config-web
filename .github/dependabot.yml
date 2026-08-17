@@ -1,0 +1,34 @@
+version: 2
+
+updates:
+  # Grouped: these three crates have four direct dependencies between them,
+  # so a queue of one pull request per patch would be noise.
+  - package-ecosystem: cargo
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    groups:
+      patch-and-minor:
+        update-types: [minor, patch]
+    # Majors arrive on their own, because they are the ones with a decision
+    # in them: each adapter is written against one framework's seam, and a
+    # framework major is a rewrite of that adapter rather than a bump.
+    ignore:
+      - dependency-name: axum
+        update-types: [version-update:semver-major]
+      - dependency-name: actix-web
+        update-types: [version-update:semver-major]
+      - dependency-name: tower
+        update-types: [version-update:semver-major]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    # One grouped bump instead of a queue: an action pin is reviewed the same
+    # way whether one moved or five did.
+    groups:
+      actions:
+        patterns: ["*"]
