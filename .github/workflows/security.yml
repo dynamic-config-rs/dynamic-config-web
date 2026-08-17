@@ -51,7 +51,7 @@ jobs:
       # trusting that nobody removed it in a hurry.
       - run: |
           for crate in dynamic-config-web-core dynamic-config-axum \
-                       dynamic-config-actix; do
+                       dynamic-config-actix dynamic-config-loco; do
             if ! grep -q '#!\[forbid(unsafe_code)\]' "$crate/src/lib.rs"; then
               echo "::error file=$crate/src/lib.rs::missing #![forbid(unsafe_code)]"
               exit 1
