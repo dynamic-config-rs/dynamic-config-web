@@ -80,6 +80,7 @@ jobs:
           # header for the same reason.
           agent='dynamic-config-web release (github.com/dynamic-config-rs/dynamic-config-web)'
           excludes=()
+          published=0
 
           for crate in dynamic-config-web-core dynamic-config-axum \
                        dynamic-config-actix dynamic-config-loco; do
@@ -89,17 +90,22 @@ jobs:
 
             case "$code" in
               404) echo "$crate is unpublished — excluded"; excludes+=(--exclude "$crate") ;;
-              200) echo "$crate is published — checked" ;;
+              200) echo "$crate is published — checked"; published=$((published + 1)) ;;
               *)   echo "::error::crates.io answered $code for $crate"; exit 1 ;;
             esac
           done
 
-          if [ ${#excludes[@]} -eq 4 ]; then
-            echo "nothing published yet; no baseline to check against"
+          # Count crates, not array entries: `excludes` gains *two* elements
+          # per crate — the flag and the name — so a four-crate first release
+          # made this eight and the guard never fired. `cargo semver-checks`
+          # with everything excluded then exits 101 with "no crates with
+          # library targets selected", which is what the first release did.
+          if [ "$published" -eq 0 ]; then
+            echo "nothing published yet; no baseline to compare against"
             exit 0
           fi
 
-          cargo semver-checks --workspace "${excludes[@]}"
+          cargo semver-checks --workspace ${excludes[@]+"${excludes[@]}"}
 
   publish:
     name: publish to crates.io
