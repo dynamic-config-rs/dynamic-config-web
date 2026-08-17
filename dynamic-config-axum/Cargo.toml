@@ -20,18 +20,27 @@ exclude.workspace = true
 
 [dependencies]
 dynamic-config-web-core = { workspace = true }
-axum = { version = "0.8", default-features = false }
-tower = { version = "0.5", default-features = false }
+# 0.8.1 rather than 0.8: this crate's own seam — `FromRequestParts` and a
+# `tower` layer — is there in 0.8.0, but `loco-rs 1.1` requires `^0.8.1` and
+# the workspace resolves once. A floor of 0.8 that the workspace can never
+# actually resolve to is a number the `minimal-versions` job would rightly
+# refuse, and 0.8.0 has been superseded since.
+axum = { version = "0.8.1", default-features = false }
+# `axum 0.8` itself requires `tower ^0.5.2`, so 0.5 was never resolvable.
+tower = { version = "0.5.2", default-features = false }
 
 [dev-dependencies]
 dynamic-config = { workspace = true, features = ["json", "watch"] }
-axum = { version = "0.8", features = ["json", "tokio", "http1"] }
-tokio = { version = "1", features = ["rt-multi-thread", "macros", "time"] }
-tower = { version = "0.5", features = ["util"] }
-serde = { version = "1", features = ["derive"] }
+axum = { version = "0.8.1", features = ["json", "tokio", "http1"] }
+# 1.45 because `dynamic-config-loco` depends on this crate by path and
+# Loco's `opendal` requires `^1.52`; one workspace resolves once. A dev-only
+# floor, so nothing a user of this crate installs is affected.
+tokio = { version = "1.52", features = ["rt-multi-thread", "macros", "time"] }
+tower = { version = "0.5.2", features = ["util"] }
+serde = { version = "1.0.221", features = ["derive"] }
 http-body-util = "0.1"
 tempfile = "3"
-serde_json = "1"
+serde_json = "1.0.127"
 
 [package.metadata.docs.rs]
 all-features = true
