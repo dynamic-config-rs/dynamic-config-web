@@ -80,8 +80,37 @@ allow = [
     # Permissive, OSI-approved, and no attribution requirement for binaries.
     # Reached through `xxhash-rust`, which the Redis client uses for hashing.
     "BSL-1.0",
+    # BSD Zero Clause: BSD-2-Clause with the attribution requirement removed,
+    # which makes it the most permissive licence on this list. `lettre` uses
+    # it for `quoted_printable`, and Loco pulls in `lettre` for its mailer.
+    "0BSD",
 ]
 confidence-threshold = 0.9
+
+# MPL-2.0 is copyleft, so it stays out of `allow` — but it is *file*-level
+# copyleft: it reaches a modified MPL file and no further, and linking a
+# library never carries it into the caller. Named crate by crate rather than
+# allowed wholesale, so that adding another one is a decision somebody makes
+# on purpose.
+#
+# All of these arrive through `loco-rs`, and only the Loco crate reaches
+# them. Anyone who depends on `dynamic-config-loco` is by definition already
+# building Loco, and would have every one of these in the tree without this
+# crate existing.
+exceptions = [
+    # Loco's terminal output, through `backtrace_printer` and `loco-gen`.
+    { allow = ["MPL-2.0"], crate = "colored" },
+    # Loco's `testing` feature pulls `scraper` — an HTML/CSS selector engine
+    # for asserting against rendered views. It is a *dev*-dependency here,
+    # taken so the test and the example can call `Initializer::after_routes`
+    # with a real `AppContext`; `AppContext` is `#[non_exhaustive]`, so
+    # `tests_cfg` is the only way to hold one. Nothing below reaches a
+    # published artefact.
+    { allow = ["MPL-2.0"], crate = "cssparser" },
+    { allow = ["MPL-2.0"], crate = "cssparser-macros" },
+    { allow = ["MPL-2.0"], crate = "dtoa-short" },
+    { allow = ["MPL-2.0"], crate = "selectors" },
+]
 
 [bans]
 multiple-versions = "warn"

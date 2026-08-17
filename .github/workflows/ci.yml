@@ -117,7 +117,7 @@ jobs:
   examples:
     needs: [changes]
     if: needs.changes.outputs.rust == 'true' || github.event_name != 'pull_request'
-    name: both examples run
+    name: every example runs
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -130,6 +130,7 @@ jobs:
       # temporary directory and needs no setup.
       - run: cargo run -p dynamic-config-axum --example two_sections
       - run: cargo run -p dynamic-config-actix --example two_sections
+      - run: cargo run -p dynamic-config-loco --example two_sections
 
   msrv:
     needs: [changes]
@@ -156,6 +157,15 @@ jobs:
       # A lockfile resolved by stable, then checked by the floor: a floor
       # that only holds against an old lockfile is not the floor a user
       # gets from `cargo add`.
+      #
+      # There is deliberately no `.cargo/config.toml` with
+      # `resolver.incompatible-rust-versions = "fallback"` here, though the
+      # engine's repository has one. Cargo applies it at the *lowest*
+      # rust-version in the workspace, and this workspace spans 1.71 to 1.94
+      # — so every crate in Loco's tree got held to 1.71, which pinned
+      # `lettre` to 0.11.14 and RUSTSEC-2026-0141 with it. Resolving newest
+      # and checking each library at its own floor is both the stricter test
+      # and the one a user's `cargo add` reproduces.
       - run: cargo generate-lockfile
       - uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772 # master
         with:
@@ -163,7 +173,12 @@ jobs:
       - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2
         with:
           shared-key: msrv-${{ matrix.rust }}
-      - run: cargo check -p ${{ matrix.package }} --locked --all-targets
+      # `check`, not `--all-targets`: the dev-dependencies pull the engine's
+      # proc-macro chain, and `proc-macro-crate` → `toml_edit` → `indexmap`
+      # → `hashbrown 0.17` declares 1.85. A user compiling this crate never
+      # builds any of it, so a floor measured through it is not the floor
+      # anybody pays. The engine's own MSRV job says the same thing.
+      - run: cargo check -p ${{ matrix.package }} --locked
 
   docs:
     needs: [changes]

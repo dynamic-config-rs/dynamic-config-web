@@ -6,13 +6,13 @@ Thanks for taking the time.
 
 ```sh
 just check          # fmt, clippy, test, docs, msrv — what CI runs
-just examples       # both examples, end to end
+just examples       # all three examples, end to end
 ```
 
-Everything needs a stable toolchain and the three MSRV toolchains:
+Everything needs a stable toolchain and the four MSRV toolchains:
 
 ```sh
-rustup toolchain install 1.71 1.80 1.88
+rustup toolchain install 1.71 1.80 1.88 1.94
 ```
 
 No Docker, no network, no services. The whole suite runs offline.

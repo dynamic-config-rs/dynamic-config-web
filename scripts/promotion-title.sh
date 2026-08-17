@@ -13,6 +13,11 @@ promotion_title() {
 
   if [ "$version" != "$released" ]; then
     title="release $version"
+  elif ! git show origin/main:CHANGELOG.md 2>/dev/null | grep -q "^## $version "; then
+    # The first release does not move the version — the manifests already
+    # carry it and there is nothing published to bump away from. What marks
+    # it is the changelog gaining that version's heading.
+    title="release $version"
   else
     title="promote dev to main"
   fi

@@ -7,11 +7,14 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 Before 1.0, a breaking change bumps the **minor** version and anything else
 bumps the patch. Raising a crate's MSRV is breaking.
 
-The three crates share one version: `dynamic-config-web-core` is named
-exactly by both adapters, so they cannot usefully move apart. The engine is
+The four crates share one version: `dynamic-config-web-core` is named
+exactly by both adapters and the Loco crate names the axum one exactly,
+so they cannot usefully move apart. The engine is
 a separate dependency, named with a caret, and releases on its own schedule.
 
 ## [Unreleased]
+
+## 0.1.0 — 2026-08-17
 
 ### Added
 
