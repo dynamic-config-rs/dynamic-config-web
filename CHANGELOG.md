@@ -13,6 +13,8 @@ a separate dependency, named with a caret, and releases on its own schedule.
 
 ## [Unreleased]
 
+## 0.1.0 — 2026-08-17
+
 ### Added
 
 - **`dynamic-config-web-core`.** `Sections`, a list of closures read once
