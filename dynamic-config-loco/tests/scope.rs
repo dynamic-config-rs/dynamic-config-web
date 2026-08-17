@@ -68,19 +68,21 @@ impl Fixture {
     }
 }
 
-/// The router Loco would have built, with the initializer's layer on it.
+/// The router Loco would have built, put through the initializer the way
+/// Loco puts it: `after_routes`, with a real `AppContext`.
 ///
-/// Not through `after_routes` itself: that takes an `&AppContext`, and
-/// Loco's `Config` is `#[non_exhaustive]` with no `Default`, so building
-/// one outside a booted application is not something a test can honestly
-/// do. What `after_routes` does with the context is nothing — the trait's
-/// own parameter is `_ctx` — and what it does with the router is
-/// `router.layer(self.layer.clone())`, which is the line below.
-///
-/// So this covers everything except that one call, and
-/// `it_installs_the_same_layer_it_answers_with` pins the rest.
-fn wired(initializer: &DynamicConfig, router: Router) -> Router {
-    router.layer(initializer.layer())
+/// `AppContext` is `#[non_exhaustive]`, so nothing downstream can build
+/// one. `tests_cfg` is Loco's own answer to that, and is why `testing` is a
+/// dev-dependency of this crate — without it the test would have to
+/// re-implement the line `after_routes` runs, and the seam under test would
+/// become the test's own code.
+async fn wired(initializer: &DynamicConfig, router: Router) -> Router {
+    let context = loco_rs::tests_cfg::app::get_app_context().await;
+
+    initializer
+        .after_routes(router, &context)
+        .await
+        .expect("the initializer installs its layer")
 }
 
 async fn body_of(app: Router, uri: &str) -> (u16, String) {
@@ -109,7 +111,7 @@ async fn the_initializer_wires_the_layer_onto_locos_router() {
     }
 
     let initializer = DynamicConfig::new(sections![Server, Features]);
-    let router = wired(&initializer, Router::new().route("/", get(handler)));
+    let router = wired(&initializer, Router::new().route("/", get(handler))).await;
 
     let (status, body) = body_of(router, "/").await;
 
@@ -140,7 +142,7 @@ async fn a_section_the_initializer_was_not_given_says_so() {
     }
 
     let initializer = DynamicConfig::new(sections![Server]);
-    let router = wired(&initializer, Router::new().route("/", get(handler)));
+    let router = wired(&initializer, Router::new().route("/", get(handler))).await;
 
     let (status, body) = body_of(router, "/").await;
 
@@ -153,8 +155,10 @@ async fn a_section_the_initializer_was_not_given_says_so() {
 
 #[test]
 fn it_installs_the_same_layer_it_answers_with() {
-    // `layer()` and what `after_routes` installs are one value, so a test
-    // over the first covers the second.
+    // `layer()` is offered to applications that would rather add a layer
+    // than one more `Box<dyn Initializer>`. What it hands back has to be
+    // the layer `after_routes` installs, or the two routes into this crate
+    // would not agree.
     let initializer = DynamicConfig::new(sections![Server, Features]);
 
     assert_eq!(initializer.layer().names(), initializer.names());

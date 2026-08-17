@@ -23,7 +23,7 @@ That makes the surface small, and these are the properties it holds.
 | No configuration value reaches an error body | Rejections name the type and the fix; a test asserts no value appears in one |
 | No configuration value reaches a log line | `Snapshot`'s `Debug` prints section names only, asserted by a test |
 | A request cannot see two generations | The snapshot is taken once, by the middleware, before the handler runs |
-| No `unsafe` | `#![forbid(unsafe_code)]` in all three crates, checked in CI |
+| No `unsafe` | `#![forbid(unsafe_code)]` in all four crates, checked in CI |
 
 An issue in how configuration is *resolved* — precedence, secrets,
 redaction, the cache on disk — belongs to the engine's repository, which has

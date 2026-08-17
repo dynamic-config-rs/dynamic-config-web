@@ -117,7 +117,7 @@ jobs:
   examples:
     needs: [changes]
     if: needs.changes.outputs.rust == 'true' || github.event_name != 'pull_request'
-    name: both examples run
+    name: every example runs
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -130,6 +130,7 @@ jobs:
       # temporary directory and needs no setup.
       - run: cargo run -p dynamic-config-axum --example two_sections
       - run: cargo run -p dynamic-config-actix --example two_sections
+      - run: cargo run -p dynamic-config-loco --example two_sections
 
   msrv:
     needs: [changes]

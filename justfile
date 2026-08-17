@@ -25,10 +25,12 @@ test:
     cargo test --workspace
     cargo test --workspace -- --test-threads=1
 
-# The two runnable examples. An example that only compiles is not an example.
+# The three runnable examples. An example that only compiles is not an
+# example.
 examples:
     cargo run -p dynamic-config-axum --example two_sections
     cargo run -p dynamic-config-actix --example two_sections
+    cargo run -p dynamic-config-loco --example two_sections
 
 # Documentation, with warnings denied — a broken intra-doc link is a broken
 # link on docs.rs.

@@ -12,9 +12,10 @@
 # talks to crates.io, so a release from a laptop cannot bypass the checks —
 # and nothing here tags, either (see below).
 
-# One version across the workspace. These three crates are one product —
-# the request scope, and one translation of it per framework — and
-# `dynamic-config-web-core` is named exactly by both adapters, so they
+# One version across the workspace. These four crates are one product —
+# the request scope, and one translation of it per framework — and each
+# names the one below it exactly: both adapters name
+# `dynamic-config-web-core`, and the Loco crate names the axum one. They
 # cannot usefully move apart. The *engine* is named with a caret and lives
 # elsewhere; that is the boundary this repository releases across.
 shared-version = true
