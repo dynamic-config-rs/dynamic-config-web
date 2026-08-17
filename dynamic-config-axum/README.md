@@ -31,7 +31,7 @@ The layer owns no lifecycle: loading, watching and the `WatchHandle` stay in
 your `main`, unchanged.
 
 See [the workspace README](../README.md) for the problem this solves, and
-`cargo run -p dynamic-config-axum --example two_sections` for a runnable
-demonstration.
+`cargo run -p dynamic-config-axum --example axum_two_sections` for a
+runnable demonstration.
 
 MIT licensed.

@@ -128,9 +128,9 @@ jobs:
       - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2
       # An example that only compiles is not an example. Each writes into a
       # temporary directory and needs no setup.
-      - run: cargo run -p dynamic-config-axum --example two_sections
-      - run: cargo run -p dynamic-config-actix --example two_sections
-      - run: cargo run -p dynamic-config-loco --example two_sections
+      - run: cargo run -p dynamic-config-axum --example axum_two_sections
+      - run: cargo run -p dynamic-config-actix --example actix_two_sections
+      - run: cargo run -p dynamic-config-loco --example loco_two_sections
 
   msrv:
     needs: [changes]

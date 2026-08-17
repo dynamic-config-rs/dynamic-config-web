@@ -1,7 +1,7 @@
 //! Two sections that must agree, over Loco.
 //!
 //! ```sh
-//! cargo run -p dynamic-config-loco --example two_sections
+//! cargo run -p dynamic-config-loco --example loco_two_sections
 //! ```
 //!
 //! Loco is axum underneath, so the tearing this prevents is the axum

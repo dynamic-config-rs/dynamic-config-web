@@ -48,8 +48,8 @@ unchanged. What this adds is the `Initializer` Loco asks a library for.
 Writing that yourself is three lines in your own initializer, and is fine.
 
 See [the workspace README](../README.md) for the problem all of this
-solves, and `cargo run -p dynamic-config-loco --example two_sections` for a
-runnable demonstration — the initializer driven through `after_routes` the
-way Loco's own boot sequence drives it.
+solves, and `cargo run -p dynamic-config-loco --example loco_two_sections`
+for a runnable demonstration — the initializer driven through
+`after_routes` the way Loco's own boot sequence drives it.
 
 MIT licensed.

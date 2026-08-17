@@ -29,7 +29,7 @@ The middleware owns no lifecycle: loading, watching and the `WatchHandle` stay i
 your `main`, unchanged.
 
 See [the workspace README](../README.md) for the problem this solves, and
-`cargo run -p dynamic-config-actix --example two_sections` for a runnable
-demonstration.
+`cargo run -p dynamic-config-actix --example actix_two_sections` for a
+runnable demonstration.
 
 MIT licensed.
