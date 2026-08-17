@@ -57,7 +57,7 @@ the GitHub release at the merge commit.
 ## What an operator has to have ready
 
 `CARGO_REGISTRY_TOKEN` as a secret on the `crates-io` environment, with
-publish rights to all three names. Nothing else.
+publish rights to all four names. Nothing else.
 
 ## Afterwards
 
