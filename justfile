@@ -28,9 +28,9 @@ test:
 # The three runnable examples. An example that only compiles is not an
 # example.
 examples:
-    cargo run -p dynamic-config-axum --example two_sections
-    cargo run -p dynamic-config-actix --example two_sections
-    cargo run -p dynamic-config-loco --example two_sections
+    cargo run -p dynamic-config-axum --example axum_two_sections
+    cargo run -p dynamic-config-actix --example actix_two_sections
+    cargo run -p dynamic-config-loco --example loco_two_sections
 
 # Documentation, with warnings denied — a broken intra-doc link is a broken
 # link on docs.rs.

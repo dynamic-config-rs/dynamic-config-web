@@ -72,11 +72,19 @@ jobs:
       - name: semver against what is on crates.io
         run: |
           set -euo pipefail
+
+          # crates.io answers 403 to a request that sends no User-Agent, and
+          # this step treats anything but 200 or 404 as a reason to stop — so
+          # without the header every release fails here, which is what the
+          # first one did. The engine and remote repositories send the same
+          # header for the same reason.
+          agent='dynamic-config-web release (github.com/dynamic-config-rs/dynamic-config-web)'
           excludes=()
 
           for crate in dynamic-config-web-core dynamic-config-axum \
                        dynamic-config-actix dynamic-config-loco; do
             code=$(curl -s -o /dev/null -w '%{http_code}' \
+              --header "User-Agent: ${agent}" \
               "https://crates.io/api/v1/crates/$crate")
 
             case "$code" in

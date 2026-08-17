@@ -1,7 +1,7 @@
 //! Two sections that must agree, over Actix Web.
 //!
 //! ```sh
-//! cargo run -p dynamic-config-actix --example two_sections
+//! cargo run -p dynamic-config-actix --example actix_two_sections
 //! ```
 //!
 //! The engine's own `actix_hello` example reads one section per handler with

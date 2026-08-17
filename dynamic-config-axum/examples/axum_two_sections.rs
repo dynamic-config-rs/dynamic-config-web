@@ -1,7 +1,7 @@
 //! Two sections that must agree, over axum.
 //!
 //! ```sh
-//! cargo run -p dynamic-config-axum --example two_sections
+//! cargo run -p dynamic-config-axum --example axum_two_sections
 //! ```
 //!
 //! The engine's own `axum_hello` example reads one section per handler with
