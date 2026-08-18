@@ -24,6 +24,12 @@ ignore = [
     # keep watching it: cargo already reports `proc-macro-error2` as code a
     # future Rust will reject (`cargo report future-incompatibilities`), so
     # this dependency has an expiry date whatever RustSec says about it.
+    # h2's 0.3 line has no patched release (the fix landed in 0.4.16 only),
+    # and actix-http 3 — the newest there is — is built on 0.3. DoS-class
+    # (a flood of empty DATA frames), reachable only in a deployed actix
+    # server behind no HTTP/2-terminating proxy. Re-visit when actix-http
+    # moves lines; nothing to update to today.
+    { id = "RUSTSEC-2026-0258", reason = "no fixed h2 0.3 exists; via actix-http 3, the current release" },
     { id = "RUSTSEC-2025-0141", reason = "unmaintained, not vulnerable; dev-only, via iai-callgrind in a bench" },
     { id = "RUSTSEC-2026-0173", reason = "unmaintained, not vulnerable; dev-only, via iai-callgrind-macros in a bench" },
     # The two `lru` advisories (an aliasing violation in `IterMut`, a
