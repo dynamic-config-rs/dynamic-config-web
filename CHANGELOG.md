@@ -14,6 +14,8 @@ a separate dependency, named with a caret, and releases on its own schedule.
 
 ## [Unreleased]
 
+## 0.2.0 — 2026-08-18
+
 ### Added
 
 - **`dynamic-config-tower`.** The snapshot layer as a plain `tower`

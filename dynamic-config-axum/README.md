@@ -5,7 +5,7 @@ for axum: one `tower` layer, one extractor.
 
 ```toml
 [dependencies]
-dynamic-config-axum = "0.1.0"
+dynamic-config-axum = "0.2.0"
 ```
 
 ```rust,ignore
