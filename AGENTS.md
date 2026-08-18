@@ -1,13 +1,15 @@
 # Working in this repository
 
-Three crates that give a Rust web service one reading of its configuration
+Five crates that give a Rust web service one reading of its configuration
 per request.
 
 ```text
 dynamic-config-web-core/   the snapshot, and nothing framework-shaped
   src/lib.rs               Snapshot, Sections, NotInScope, sections!
-dynamic-config-axum/       a tower Layer and a FromRequestParts extractor
+dynamic-config-tower/      the Layer/Service pair, framework-free
+dynamic-config-axum/       the tower layer re-exported + a FromRequestParts extractor
 dynamic-config-actix/      a Transform middleware and a FromRequest extractor
+dynamic-config-loco/       the Initializer Loco asks a library for, over axum
 ```
 
 ## What these crates are
@@ -45,14 +47,15 @@ the handler comes back out of that one value.
 
 ## What must move together
 
-Both adapters answer one set of questions. Adding a case to
+Every adapter answers one set of questions. Adding a case to
 `dynamic-config-axum/tests/scope.rs` means adding it to
-`dynamic-config-actix/tests/scope.rs` — the two files are deliberately
-parallel, and a case only one of them answers is a promise only half kept.
+`dynamic-config-actix/tests/scope.rs` and, where the seam exists there, to
+`dynamic-config-loco/tests/scope.rs` — the files are deliberately parallel,
+and a case only one of them answers is a promise only partly kept.
 
-Adding or changing public API means: the crate, both test files, both
+Adding or changing public API means: the crate, the test files, the
 examples, `CHANGELOG.md`, and the READMEs whose snippets
-`scripts/sync-readme-versions.sh` counts (`expected = 3`).
+`scripts/sync-readme-versions.sh` counts (`expected = 4`).
 
 ## The gate
 

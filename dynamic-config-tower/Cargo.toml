@@ -1,0 +1,47 @@
+[package]
+name = "dynamic-config-tower"
+version.workspace = true
+edition.workspace = true
+# The workspace floor: `tower 0.5` and `http 1` both sit below it.
+rust-version = "1.71"
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+authors.workspace = true
+categories.workspace = true
+keywords = ["config", "hot-reload", "tower", "middleware", "layer"]
+description = "A request-scoped dynamic-config snapshot as a plain tower Layer — what dynamic-config-axum is built on"
+documentation = "https://docs.rs/dynamic-config-tower"
+readme = "README.md"
+exclude.workspace = true
+
+[dependencies]
+dynamic-config-web-core = { workspace = true }
+# `http` for the Request type the service wraps; `tower` for the Layer
+# and Service traits. Nothing axum-shaped: axum is one consumer of this,
+# tonic and plain hyper are others. The floor is `1.4` because opendal —
+# in this workspace through loco — requires `^1.4`, and under
+# `-Z direct-minimal-versions` a lower direct floor is a contradiction.
+http = "1.4"
+tower = { version = "0.5.2", default-features = false }
+
+[dev-dependencies]
+dynamic-config = { workspace = true, features = ["json"] }
+# The proof this crate stands without axum: a hyper-only integration
+# test drives the service through `tower::ServiceExt` alone.
+tower = { version = "0.5.2", features = ["util"] }
+http-body-util = "0.1"
+# `1.11`: loco-rs 1.1 — in this same workspace — requires `bytes ^1.11`,
+# and under `-Z direct-minimal-versions` a lower direct floor here is a
+# resolver contradiction, not a preference.
+bytes = "1.11"
+# `1.52`, the same floor the axum crate declares: under
+# `-Z direct-minimal-versions` every direct floor is pinned exactly, so
+# a lower one here is a resolver contradiction, not a preference.
+tokio = { version = "1.52", features = ["rt-multi-thread", "macros"] }
+serde = { version = "1.0.221", features = ["derive"] }
+tempfile = "3"
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]

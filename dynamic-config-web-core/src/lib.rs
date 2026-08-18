@@ -637,6 +637,43 @@ mod tests {
     }
 
     #[test]
+    fn a_reload_on_every_attempt_still_answers() {
+        // The exhaustion branch: something reloads faster than a read
+        // completes, eight times running. `take()` gives up checking and
+        // serves the last read — no worse than not checking — rather than
+        // spinning forever or panicking. The branch had never been hit by
+        // a test; this pins both the exit and the attempt count.
+        use std::sync::atomic::{AtomicU64, Ordering};
+
+        static RESTLESS: AtomicU64 = AtomicU64::new(1);
+        static READS: AtomicU64 = AtomicU64::new(0);
+
+        let sections = Sections::new()
+            .section_with_generation(
+                || {
+                    READS.fetch_add(1, Ordering::SeqCst);
+                    // A reload lands during *every* read, forever.
+                    RESTLESS.fetch_add(1, Ordering::SeqCst);
+
+                    Some(Arc::new(Server {
+                        port: RESTLESS.load(Ordering::SeqCst) as u16,
+                    }))
+                },
+                || RESTLESS.load(Ordering::SeqCst),
+            )
+            .section_with_generation(|| Some(Arc::new(Features { cache: true })), || 1);
+
+        let snapshot = sections.take();
+
+        // It answered, with something readable.
+        assert!(snapshot.get::<Server>().is_some());
+        assert!(snapshot.get::<Features>().is_some());
+
+        // Eight checked attempts, then the one unchecked read it serves.
+        assert_eq!(READS.load(Ordering::SeqCst), (ATTEMPTS + 1) as u64);
+    }
+
+    #[test]
     fn a_list_that_cannot_report_generations_still_reads() {
         // `section()` takes a reader and nothing else, so there is no
         // counter to compare. That list reads once, as it always did.
@@ -653,5 +690,104 @@ mod tests {
         let moved = std::thread::spawn(move || snapshot.get::<Server>().unwrap().port);
 
         assert_eq!(moved.join().unwrap(), 8080);
+    }
+}
+
+#[cfg(test)]
+mod stress {
+    use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
+    use std::sync::Arc;
+
+    use super::*;
+
+    struct Pair {
+        left: u64,
+    }
+
+    /// Real threads, correlated sentinels: a writer moves two cells
+    /// left-then-right while readers `take()` as fast as they can. The
+    /// provable invariant is the one tearing alone can break: with that
+    /// write order, `right` may lag `left` in a snapshot but can never
+    /// lead it — leading requires a read pass that straddled the pair,
+    /// which is exactly what the retry refuses.
+    ///
+    /// The writer pauses *between* pairs and never inside one. That is
+    /// the honest model — real reloads are file events milliseconds
+    /// apart — and it is also load-bearing: a writer that increments in
+    /// a saturated loop defeats the retry budget by construction, and
+    /// the documented exhaustion fallback ("no worse than not checking")
+    /// then serves mixed state on purpose. This test pins the guarantee
+    /// where the guarantee exists.
+    ///
+    /// Deterministic disturbance is covered one test up; this is the
+    /// scheduler's own interleaving, short in CI by design.
+    #[test]
+    fn under_a_real_storm_right_never_leads_left() {
+        static LEFT: AtomicU64 = AtomicU64::new(0);
+        static RIGHT: AtomicU64 = AtomicU64::new(0);
+
+        let sections = Arc::new(
+            Sections::new()
+                .section_with_generation(
+                    || {
+                        Some(Arc::new(Pair {
+                            left: LEFT.load(Ordering::SeqCst),
+                        }))
+                    },
+                    || LEFT.load(Ordering::SeqCst),
+                )
+                .section_with_generation(
+                    || Some(Arc::new([RIGHT.load(Ordering::SeqCst)])),
+                    || RIGHT.load(Ordering::SeqCst),
+                ),
+        );
+
+        let stop = Arc::new(AtomicBool::new(false));
+        let mut readers = Vec::new();
+
+        for _ in 0..4 {
+            let sections = Arc::clone(&sections);
+            let stop = Arc::clone(&stop);
+
+            readers.push(std::thread::spawn(move || {
+                let mut inversions = 0u64;
+
+                while !stop.load(Ordering::Relaxed) {
+                    let snapshot = sections.take();
+
+                    let left = snapshot.get::<Pair>().expect("registered").left;
+                    let right = snapshot.get::<[u64; 1]>().expect("registered")[0];
+
+                    if right > left {
+                        inversions += 1;
+                    }
+                }
+
+                inversions
+            }));
+        }
+
+        let writer_stop = Arc::clone(&stop);
+        let writer = std::thread::spawn(move || {
+            while !writer_stop.load(Ordering::Relaxed) {
+                LEFT.fetch_add(1, Ordering::SeqCst);
+                RIGHT.fetch_add(1, Ordering::SeqCst);
+
+                // Between pairs, never inside one.
+                std::thread::sleep(std::time::Duration::from_micros(50));
+            }
+        });
+
+        std::thread::sleep(std::time::Duration::from_millis(500));
+        stop.store(true, Ordering::Relaxed);
+
+        writer.join().expect("the writer exits");
+
+        let inversions: u64 = readers
+            .into_iter()
+            .map(|reader| reader.join().expect("a reader exits"))
+            .sum();
+
+        assert_eq!(inversions, 0, "a snapshot mixed reads across an install");
     }
 }

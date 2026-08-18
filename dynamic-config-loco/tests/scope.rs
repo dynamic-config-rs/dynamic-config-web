@@ -172,3 +172,54 @@ fn it_reports_what_it_will_take() {
     assert_eq!(Initializer::name(&initializer), "dynamic-config");
     assert!(format!("{initializer:?}").contains("Server"));
 }
+
+#[tokio::test]
+async fn boxed_installs_the_same_initializer_new_builds() {
+    // `boxed` is the one-line form `Hooks::initializers` wants; it must
+    // be `new` in a box and nothing else.
+    let _fixture = Fixture::new(8080, 1);
+
+    async fn handler(Config(server): Config<Server>) -> String {
+        format!("{}", server.port)
+    }
+
+    let context = loco_rs::tests_cfg::app::get_app_context().await;
+    let initializer = DynamicConfig::boxed(sections![Server, Features]);
+
+    assert_eq!(initializer.name(), "dynamic-config");
+
+    let router = initializer
+        .after_routes(Router::new().route("/", get(handler)), &context)
+        .await
+        .expect("the boxed initializer installs its layer");
+
+    let (status, body) = body_of(router, "/").await;
+
+    assert_eq!(status, 200, "{body}");
+    assert_eq!(body, "8080");
+}
+
+#[tokio::test]
+async fn the_snapshot_escape_hatch_works_through_the_re_export() {
+    // The loco crate re-exports the axum pieces unchanged; the free
+    // function is part of that surface and reads the same snapshot.
+    let _fixture = Fixture::new(8080, 1);
+
+    async fn handler(request: axum::extract::Request) -> String {
+        let (parts, _) = request.into_parts();
+        let snapshot = dynamic_config_loco::snapshot(&parts).expect("the layer ran");
+
+        match snapshot.get::<Server>() {
+            Some(server) => format!("{}", server.port),
+            None => "nothing".to_string(),
+        }
+    }
+
+    let initializer = DynamicConfig::new(sections![Server]);
+    let router = wired(&initializer, Router::new().route("/", get(handler))).await;
+
+    let (status, body) = body_of(router, "/").await;
+
+    assert_eq!(status, 200, "{body}");
+    assert_eq!(body, "8080");
+}

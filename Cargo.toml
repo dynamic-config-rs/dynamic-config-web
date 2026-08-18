@@ -19,6 +19,7 @@ members = [
     "dynamic-config-axum",
     "dynamic-config-actix",
     "dynamic-config-loco",
+    "dynamic-config-tower",
 ]
 
 [workspace.package]
@@ -48,6 +49,7 @@ dynamic-config = { version = "0.6", default-features = false }
 # depend on one that is not; exact, because it moves with them in one
 # release.
 dynamic-config-web-core = { version = "=0.1.0", path = "dynamic-config-web-core" }
+dynamic-config-tower = { version = "=0.1.0", path = "dynamic-config-tower" }
 # The Loco crate is the axum one plus an `Initializer`, so it names it
 # the same way: exact, and moving in the same release.
 dynamic-config-axum = { version = "=0.1.0", path = "dynamic-config-axum" }

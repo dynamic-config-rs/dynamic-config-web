@@ -43,20 +43,30 @@
 //!
 //! [`WatchHandle`]: https://docs.rs/dynamic-config/latest/dynamic_config/watch/struct.WatchHandle.html
 
+//!
+//! # Long-lived connections
+//!
+//! A WebSocket upgrade begins as an HTTP request, so `Config<T>`
+//! extracted at upgrade time is correct *for the handshake* — and wrong
+//! as the connection's configuration for life. Do not move the `Arc`
+//! into the `on_upgrade` future as "the config"; inside the socket loop
+//! read `T::current()` per iteration or per message batch, and treat a
+//! change as an event if the protocol wants one. The same applies to SSE
+//! and long streaming bodies.
+
 #![forbid(unsafe_code)]
 #![warn(missing_docs, missing_debug_implementations, rust_2018_idioms)]
 #![cfg_attr(docsrs, feature(doc_cfg))]
 
 use std::any::Any;
-use std::sync::Arc;
-use std::task::{Context, Poll};
 
 use axum::extract::FromRequestParts;
 use axum::http::request::Parts;
-use axum::http::{Request, StatusCode};
+use std::sync::Arc;
+
+use axum::http::StatusCode;
 use axum::response::{IntoResponse, Response};
-use dynamic_config_web_core::{NotInScope, Sections, Snapshot};
-use tower::{Layer, Service};
+use dynamic_config_web_core::{NotInScope, Snapshot};
 
 pub use dynamic_config_web_core::{sections, NotInScope as OutOfScope, Sections as ConfigSections};
 
@@ -166,114 +176,7 @@ impl IntoResponse for SnapshotMissing {
     }
 }
 
-/// Takes one snapshot per request and puts it in the request's extensions.
-///
-/// ```no_run
-/// # use axum::Router;
-/// # use dynamic_config_axum::SnapshotLayer;
-/// # use dynamic_config_web_core::Sections;
-/// # let sections = Sections::new();
-/// let app: Router = Router::new().layer(SnapshotLayer::new(sections));
-/// ```
-///
-/// `.layer()` wraps the routes a `Router` holds **when it is called**, so
-/// it goes last:
-///
-/// ```ignore
-/// Router::new().route("/", get(handler)).layer(layer)   // handler is wrapped
-/// Router::new().layer(layer).route("/", get(handler))   // it is NOT
-/// ```
-///
-/// The second form compiles and answers `500` on every request.
-#[derive(Clone)]
-pub struct SnapshotLayer {
-    sections: Arc<Sections>,
-}
-
-impl SnapshotLayer {
-    /// Builds the layer over the sections a request should read.
-    #[must_use]
-    pub fn new(sections: Sections) -> Self {
-        Self {
-            sections: Arc::new(sections),
-        }
-    }
-
-    /// The type names it will take, in order.
-    #[must_use]
-    pub fn names(&self) -> Vec<&'static str> {
-        self.sections.names()
-    }
-}
-
-impl std::fmt::Debug for SnapshotLayer {
-    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        formatter
-            .debug_struct("SnapshotLayer")
-            .field("sections", &self.sections.names())
-            .finish()
-    }
-}
-
-impl<S> Layer<S> for SnapshotLayer {
-    type Service = SnapshotService<S>;
-
-    fn layer(&self, inner: S) -> Self::Service {
-        SnapshotService {
-            inner,
-            sections: Arc::clone(&self.sections),
-        }
-    }
-}
-
-/// The service [`SnapshotLayer`] wraps a router in.
-#[derive(Clone)]
-pub struct SnapshotService<S> {
-    inner: S,
-    sections: Arc<Sections>,
-}
-
-impl<S> std::fmt::Debug for SnapshotService<S> {
-    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        formatter
-            .debug_struct("SnapshotService")
-            .field("sections", &self.sections.names())
-            .finish_non_exhaustive()
-    }
-}
-
-impl<S, B> Service<Request<B>> for SnapshotService<S>
-where
-    S: Service<Request<B>>,
-{
-    type Response = S::Response;
-    type Error = S::Error;
-    type Future = S::Future;
-
-    fn poll_ready(&mut self, context: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
-        self.inner.poll_ready(context)
-    }
-
-    fn call(&mut self, mut request: Request<B>) -> Self::Future {
-        // Once, here, before anything downstream runs. Every read in the
-        // handler comes out of this one value.
-        let taken = self.sections.take();
-
-        // Merged rather than inserted, because layers nest: an outer
-        // `Router` and a `nest`ed one may each carry a layer, the outer
-        // runs first, and a bare `insert` here would erase what it took.
-        // A handler under both then sees only the inner list, and asks for
-        // a section whose 500 says to add what is already there.
-        let merged = match request.extensions_mut().remove::<Snapshot>() {
-            Some(outer) => outer.merged_with(taken),
-            None => taken,
-        };
-
-        request.extensions_mut().insert(merged);
-
-        self.inner.call(request)
-    }
-}
+pub use dynamic_config_tower::{SnapshotLayer, SnapshotService};
 
 /// The snapshot this request began with, for code that has the parts in
 /// hand rather than an extractor — another middleware, or a handler that

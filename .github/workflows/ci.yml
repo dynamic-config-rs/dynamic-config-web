@@ -146,6 +146,7 @@ jobs:
         # which is the whole reason they are separate crates.
         include:
           - { rust: "1.71", package: dynamic-config-web-core }
+          - { rust: "1.71", package: dynamic-config-tower }
           - { rust: "1.80", package: dynamic-config-axum }
           - { rust: "1.88", package: dynamic-config-actix }
           - { rust: "1.94", package: dynamic-config-loco }
@@ -218,6 +219,43 @@ jobs:
       - run: cargo +nightly generate-lockfile -Z direct-minimal-versions
       - run: cargo +stable check --workspace --all-features --locked
 
+  coverage:
+    needs: [changes]
+    if: needs.changes.outputs.rust == 'true' || github.event_name != 'pull_request'
+    name: coverage report
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772 # master
+        with:
+          toolchain: stable
+          components: llvm-tools-preview
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2
+      - uses: taiki-e/install-action@7f4eb899022d8fe70b20c4f3de697aa85c309026 # v2
+        with:
+          tool: cargo-llvm-cov
+      - run: |
+          cargo llvm-cov --workspace --summary-only | tee -a "$GITHUB_STEP_SUMMARY"
+
+  book:
+    needs: [changes]
+    if: needs.changes.outputs.docs == 'true' || github.event_name != 'pull_request'
+    name: the book builds
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - name: install mdbook
+        run: |
+          mkdir -p "$HOME/.local/bin"
+          curl -sSL -o mdbook.tar.gz \
+            https://github.com/rust-lang/mdBook/releases/download/v0.4.52/mdbook-v0.4.52-x86_64-unknown-linux-gnu.tar.gz
+          echo "c0b903f01dd8f4edc644372ad2b80b1fdddd12552d37b6a098657cbd8eddd768  mdbook.tar.gz" | sha256sum -c -
+          tar -xzf mdbook.tar.gz -C "$HOME/.local/bin"
+      - run: |
+          "$HOME/.local/bin/mdbook" build book
+
   docs-links:
     needs: [changes]
     if: needs.changes.outputs.docs == 'true' || github.event_name != 'pull_request'
@@ -238,7 +276,7 @@ jobs:
             --exclude '^https://docs\.rs/dynamic-config-a'
             --exclude '^https://crates\.io/crates/dynamic-config-a'
             README.md CONTRIBUTING.md SECURITY.md AGENTS.md CHANGELOG.md
-            dynamic-config-*/README.md
+            dynamic-config-*/README.md book/src/*.md
           fail: true
 
   # Always runs: linting the workflows is what catches a mistake in the

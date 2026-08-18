@@ -20,6 +20,10 @@ exclude.workspace = true
 
 [dependencies]
 dynamic-config-web-core = { workspace = true }
+# The layer itself: nothing in it is axum's, so it lives one crate down
+# and is re-exported here unchanged. tonic and plain hyper users take it
+# directly as `dynamic-config-tower`.
+dynamic-config-tower = { workspace = true }
 # 0.8.1 rather than 0.8: this crate's own seam — `FromRequestParts` and a
 # `tower` layer — is there in 0.8.0, but `loco-rs 1.1` requires `^0.8.1` and
 # the workspace resolves once. A floor of 0.8 that the workspace can never
