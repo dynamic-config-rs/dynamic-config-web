@@ -315,3 +315,30 @@ async fn no_configuration_value_reaches_the_rejection() {
         "a port reached an error body: {body}"
     );
 }
+
+#[tokio::test]
+async fn the_snapshot_escape_hatch_reads_what_the_layer_took() {
+    // `snapshot(&Parts)` is the door for code that is not an extractor —
+    // a middleware after this one, a guard. Same sections, same reading.
+    let fixture = Fixture::new(8080, 1);
+    fixture.install();
+
+    async fn handler(request: axum::extract::Request) -> String {
+        let (parts, _) = request.into_parts();
+        let snapshot = dynamic_config_axum::snapshot(&parts).expect("the layer ran");
+
+        match snapshot.get::<Server>() {
+            Some(server) => format!("{}", server.port),
+            None => "nothing".to_string(),
+        }
+    }
+
+    let app = Router::new()
+        .route("/", get(handler))
+        .layer(SnapshotLayer::new(sections![Server]));
+
+    let (status, body) = body_of(app, "/").await;
+
+    assert_eq!(status, 200, "{body}");
+    assert_eq!(body, "8080");
+}

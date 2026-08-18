@@ -37,11 +37,9 @@ pattern = re.compile(
 
 # How many READMEs carry a snippet — a hardcoded number is what makes a
 # README dropping out of the sync a loud failure instead of a shrug. A new
-# crate joins the count, or the release fails saying so.
-#
-# Four, not five: `dynamic-config-web-core` is not a crate anyone adds by
-# hand, so its README carries no install snippet to keep in step.
-expected = 4
+# crate joins the count, or the release fails saying so. Binaries are
+# exempt by design: a binary is installed, not depended on.
+expected=5
 
 matched = 0
 # `dynamic-config*` rather than `dynamic-config-*`: the engine crate's

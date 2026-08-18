@@ -42,6 +42,7 @@ docs:
 msrv:
     cargo +stable generate-lockfile
     cargo +1.71 check -p dynamic-config-web-core --locked
+    cargo +1.71 check -p dynamic-config-tower --locked
     cargo +1.80 check -p dynamic-config-axum --locked
     cargo +1.88 check -p dynamic-config-actix --locked
     cargo +1.94 check -p dynamic-config-loco --locked

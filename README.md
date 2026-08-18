@@ -55,6 +55,7 @@ result to every extractor in it.
 
 | Crate | For | MSRV |
 |---|---|---|
+| [`dynamic-config-tower`](dynamic-config-tower) | any `tower` stack — the layer the axum crate is built on | 1.71 |
 | [`dynamic-config-axum`](dynamic-config-axum) | axum 0.8 — a `tower` layer and a `Config<T>` extractor | 1.80 |
 | [`dynamic-config-actix`](dynamic-config-actix) | Actix Web 4 — a middleware and a `FromRequest` extractor | 1.88 |
 | [`dynamic-config-loco`](dynamic-config-loco) | [Loco](https://loco.rs) — an `Initializer`, over the axum crate | 1.94 |

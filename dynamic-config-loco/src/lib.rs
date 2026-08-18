@@ -77,7 +77,7 @@ use loco_rs::Result;
 // the compiler sees it.
 use axum::Router as AxumRouter;
 
-pub use dynamic_config_axum::{Config, SnapshotLayer, SnapshotMissing};
+pub use dynamic_config_axum::{snapshot, Config, SnapshotLayer, SnapshotMissing};
 pub use dynamic_config_web_core::{sections, NotInScope, Sections as ConfigSections, Snapshot};
 
 /// The initializer that puts one reading on every request.

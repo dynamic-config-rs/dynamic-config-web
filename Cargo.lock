@@ -1402,6 +1402,7 @@ version = "0.1.0"
 dependencies = [
  "axum",
  "dynamic-config",
+ "dynamic-config-tower",
  "dynamic-config-web-core",
  "http-body-util",
  "serde",
@@ -1438,6 +1439,21 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn 3.0.3",
+]
+
+[[package]]
+name = "dynamic-config-tower"
+version = "0.1.0"
+dependencies = [
+ "bytes",
+ "dynamic-config",
+ "dynamic-config-web-core",
+ "http 1.5.0",
+ "http-body-util",
+ "serde",
+ "tempfile",
+ "tokio",
+ "tower",
 ]
 
 [[package]]
@@ -5196,9 +5212,9 @@ dependencies = [
 
 [[package]]
 name = "zerovec-derive"
-version = "0.11.4"
+version = "0.11.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "47402523226a02bfe5230160dc3ccc089aa6f6f19e7fcbb4e6f824bbb1b4aa62"
+checksum = "9f212a141d820099d57ffafb9569be9617a6f27d3dc881fbee8fb56642f917a9"
 dependencies = [
  "proc-macro2",
  "quote",

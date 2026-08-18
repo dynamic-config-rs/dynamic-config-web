@@ -14,6 +14,21 @@ a separate dependency, named with a caret, and releases on its own schedule.
 
 ## [Unreleased]
 
+### Added
+
+- **`dynamic-config-tower`.** The snapshot layer as a plain `tower`
+  crate — `SnapshotLayer` and `SnapshotService` moved down from the axum
+  crate, which now depends on and re-exports them unchanged. Nothing in
+  the layer was axum's: it wraps any service over an `http::Request`,
+  which is what lets tonic, plain hyper, or any tower stack take one
+  reading per request without adopting a framework. A hyper-free
+  integration test drives it through `tower::ServiceExt` alone, as the
+  proof it stands without axum.
+
+- **`dynamic_config_loco::snapshot` is re-exported.** The crate's claim is
+  the axum surface unchanged, and the free function — the door for code
+  that is not an extractor — was the one piece missing from it.
+
 ## 0.1.0 — 2026-08-17
 
 ### Added

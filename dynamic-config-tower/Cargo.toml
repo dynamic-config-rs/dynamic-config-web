@@ -1,0 +1,39 @@
+[package]
+name = "dynamic-config-tower"
+version.workspace = true
+edition.workspace = true
+# The workspace floor: `tower 0.5` and `http 1` both sit below it.
+rust-version = "1.71"
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+authors.workspace = true
+categories.workspace = true
+keywords = ["config", "hot-reload", "tower", "middleware", "layer"]
+description = "A request-scoped dynamic-config snapshot as a plain tower Layer — what dynamic-config-axum is built on"
+documentation = "https://docs.rs/dynamic-config-tower"
+readme = "README.md"
+exclude.workspace = true
+
+[dependencies]
+dynamic-config-web-core = { workspace = true }
+# `http` for the Request type the service wraps; `tower` for the Layer
+# and Service traits. Nothing axum-shaped: axum is one consumer of this,
+# tonic and plain hyper are others.
+http = "1"
+tower = { version = "0.5.2", default-features = false }
+
+[dev-dependencies]
+dynamic-config = { workspace = true, features = ["json"] }
+# The proof this crate stands without axum: a hyper-only integration
+# test drives the service through `tower::ServiceExt` alone.
+tower = { version = "0.5.2", features = ["util"] }
+http-body-util = "0.1"
+bytes = "1"
+tokio = { version = "1", features = ["rt-multi-thread", "macros"] }
+serde = { version = "1.0.221", features = ["derive"] }
+tempfile = "3"
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]

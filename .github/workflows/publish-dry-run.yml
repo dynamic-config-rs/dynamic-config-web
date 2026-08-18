@@ -54,8 +54,9 @@ jobs:
       # page with no README is a page that cannot say so.
       - name: every crate carries a readme and a licence
         run: |
-          for crate in dynamic-config-web-core dynamic-config-axum \
-                       dynamic-config-actix dynamic-config-loco; do
+          for crate in dynamic-config-web-core dynamic-config-tower \
+                       dynamic-config-axum dynamic-config-actix \
+                       dynamic-config-loco; do
             tarball=$(find target/package -maxdepth 1 -name "$crate-*.crate" 2>/dev/null | head -1)
 
             if [ -z "$tarball" ]; then

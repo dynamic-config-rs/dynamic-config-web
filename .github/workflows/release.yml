@@ -82,8 +82,9 @@ jobs:
           excludes=()
           published=0
 
-          for crate in dynamic-config-web-core dynamic-config-axum \
-                       dynamic-config-actix dynamic-config-loco; do
+          for crate in dynamic-config-web-core dynamic-config-tower \
+                       dynamic-config-axum dynamic-config-actix \
+                       dynamic-config-loco; do
             code=$(curl -s -o /dev/null -w '%{http_code}' \
               --header "User-Agent: ${agent}" \
               "https://crates.io/api/v1/crates/$crate")
@@ -140,9 +141,13 @@ jobs:
             fi
           }
 
-          # The core first: both adapters name it exactly, and crates.io
-          # needs it to exist before it will take them.
+          # The core first: everything names it exactly, and crates.io
+          # needs it to exist before it will take the rest. The tower
+          # crate rides the same first wave's second step, because the
+          # axum crate names *it* exactly too.
           publish dynamic-config-web-core
+          sleep 45
+          publish dynamic-config-tower
           sleep 45
           publish dynamic-config-axum
           publish dynamic-config-actix
@@ -180,8 +185,28 @@ jobs:
 
           echo "--- notes ---"
           cat release-notes.md
+      # An SBOM, attached to the release rather than gating it — the same
+      # trade the engine's release makes, for the same reason: an SBOM that
+      # fails a build fails it for a fact about somebody else's published
+      # package, and the advisory gate in security.yml is where that lives.
+      - uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772 # master
+        with:
+          toolchain: stable
+      - name: the bill of materials
+        continue-on-error: true
+        run: |
+          mkdir -p sbom
+
+          cargo install cargo-cyclonedx --locked --version 0.5.9
+          # One document per crate: four crates are four published
+          # artefacts, and a consumer asks about the one they depend on.
+          cargo cyclonedx --all --format json
+          find . -name "*.cdx.json" -not -path "./sbom/*" -exec mv {} sbom/ \;
+
+          ls -la sbom
       - uses: softprops/action-gh-release@3d0d9888cb7fd7b750713d6e236d1fcb99157228 # v3
         with:
           tag_name: v${{ needs.decide.outputs.version }}
           name: v${{ needs.decide.outputs.version }}
           body_path: release-notes.md
+          files: sbom/*.cdx.json

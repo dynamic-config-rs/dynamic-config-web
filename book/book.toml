@@ -1,0 +1,10 @@
+[book]
+title = "dynamic-config for Rust Web Services"
+authors = ["Cevat Batuhan Tolon"]
+language = "en"
+src = "src"
+
+[output.html]
+default-theme = "rust"
+git-repository-url = "https://github.com/dynamic-config-rs/dynamic-config-web"
+site-url = "/rust-web/"

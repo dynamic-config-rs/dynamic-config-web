@@ -268,3 +268,67 @@ async fn no_configuration_value_reaches_the_rejection() {
 
     assert!(!rendered.contains("8080"), "a port reached an error body");
 }
+
+#[actix_web::test]
+async fn a_nested_middleware_does_not_erase_the_outer_one() {
+    // A scoped `web::scope` with its own middleware inside an `App` with
+    // another. The outer wrap runs first, the inner second; a bare insert
+    // would replace what the outer took, and a handler under both would
+    // 500 asking for a section it can see in its own `sections![]` call.
+    let fixture = Fixture::new(8080, 1);
+    fixture.install();
+
+    async fn handler(server: Config<Server>, flags: Config<Features>) -> String {
+        format!("{} {}", server.port, flags.generation)
+    }
+
+    let app = test::init_service(
+        App::new()
+            .wrap(DynamicConfig::new(sections![Server]))
+            .service(
+                web::scope("/inner")
+                    .wrap(DynamicConfig::new(sections![Features]))
+                    .route("/both", web::get().to(handler)),
+            ),
+    )
+    .await;
+
+    let response = test::call_service(
+        &app,
+        test::TestRequest::get().uri("/inner/both").to_request(),
+    )
+    .await;
+
+    assert_eq!(response.status(), 200);
+    assert_eq!(test::read_body(response).await, "8080 1");
+}
+
+#[actix_web::test]
+async fn the_snapshot_escape_hatch_reads_what_the_middleware_took() {
+    // `snapshot(&HttpRequest)` is the door for code that is not an
+    // extractor — a guard, a tracing layer. It answers a clone of the
+    // request's snapshot, and the same sections the extractors see.
+    let fixture = Fixture::new(8080, 1);
+    fixture.install();
+
+    async fn handler(request: actix_web::HttpRequest) -> String {
+        let snapshot = dynamic_config_actix::snapshot(&request).expect("the middleware ran");
+
+        match snapshot.get::<Server>() {
+            Some(server) => format!("{}", server.port),
+            None => "nothing".to_string(),
+        }
+    }
+
+    let app = test::init_service(
+        App::new()
+            .wrap(DynamicConfig::new(sections![Server]))
+            .route("/", web::get().to(handler)),
+    )
+    .await;
+
+    let response = test::call_service(&app, test::TestRequest::get().uri("/").to_request()).await;
+
+    assert_eq!(response.status(), 200);
+    assert_eq!(test::read_body(response).await, "8080");
+}
