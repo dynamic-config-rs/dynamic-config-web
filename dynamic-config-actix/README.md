@@ -5,7 +5,7 @@ for Actix Web: one middleware, one extractor.
 
 ```toml
 [dependencies]
-dynamic-config-actix = "0.1.0"
+dynamic-config-actix = "0.2.0"
 ```
 
 ```rust,ignore

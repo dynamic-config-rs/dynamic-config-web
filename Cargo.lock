@@ -1386,7 +1386,7 @@ dependencies = [
 
 [[package]]
 name = "dynamic-config-actix"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "actix-http",
  "actix-web",
@@ -1398,7 +1398,7 @@ dependencies = [
 
 [[package]]
 name = "dynamic-config-axum"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "axum",
  "dynamic-config",
@@ -1414,7 +1414,7 @@ dependencies = [
 
 [[package]]
 name = "dynamic-config-loco"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "async-trait",
  "axum",
@@ -1443,7 +1443,7 @@ dependencies = [
 
 [[package]]
 name = "dynamic-config-tower"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "bytes",
  "dynamic-config",
@@ -1458,7 +1458,7 @@ dependencies = [
 
 [[package]]
 name = "dynamic-config-web-core"
-version = "0.1.0"
+version = "0.2.0"
 
 [[package]]
 name = "ego-tree"

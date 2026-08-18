@@ -5,7 +5,7 @@ for [Loco](https://loco.rs): one initializer, one extractor.
 
 ```toml
 [dependencies]
-dynamic-config-loco = "0.1.0"
+dynamic-config-loco = "0.2.0"
 ```
 
 ```rust,ignore
