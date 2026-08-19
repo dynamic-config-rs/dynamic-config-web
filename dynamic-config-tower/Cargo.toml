@@ -26,7 +26,8 @@ http = "1.4"
 tower = { version = "0.5.2", default-features = false }
 
 [dev-dependencies]
-dynamic-config = { workspace = true, features = ["json"] }
+# `watch` so the example can hold a real watcher, the way a service would.
+dynamic-config = { workspace = true, features = ["json", "watch"] }
 # The proof this crate stands without axum: a hyper-only integration
 # test drives the service through `tower::ServiceExt` alone.
 tower = { version = "0.5.2", features = ["util"] }

@@ -9,10 +9,11 @@ it.
 purpose and has not needed to move, but pre-1.0 a breaking change bumps
 the minor version and the changelog says so in its first line.
 
-- **Raising a crate's MSRV is breaking.** The floors differ — 1.71,
-  1.71, 1.80, 1.88, 1.94 — because each crate pays only for what it
-  pulls in, and each is measured against a lockfile resolved by stable,
-  which is what a user's `cargo add` produces.
+- **Raising a crate's MSRV is breaking.** The floor is the
+  organisation's one 1.88 (loco alone at 1.94, loco's own), measured
+  against a lockfile resolved by stable, which is what a user's
+  `cargo add` produces. The raise to 1.88 was announced as security
+  work in the 0.2.x round.
 - **Adding a framework crate is additive. Removing one is breaking.**
 - The engine floor moving is not by itself breaking here: what matters
   is whether *these* crates' surface moved.

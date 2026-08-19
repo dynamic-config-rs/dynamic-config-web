@@ -10,7 +10,7 @@ edition.workspace = true
 # A number lower than that would be true only of a lockfile pinned to an
 # older actix-web, and a floor nobody's default resolution reaches is a
 # number in a manifest rather than a promise.
-rust-version = "1.88"
+rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
 homepage.workspace = true

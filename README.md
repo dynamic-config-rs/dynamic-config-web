@@ -55,14 +55,15 @@ result to every extractor in it.
 
 | Crate | For | MSRV |
 |---|---|---|
-| [`dynamic-config-tower`](dynamic-config-tower) | any `tower` stack — the layer the axum crate is built on | 1.71 |
-| [`dynamic-config-axum`](dynamic-config-axum) | axum 0.8 — a `tower` layer and a `Config<T>` extractor | 1.80 |
+| [`dynamic-config-tower`](dynamic-config-tower) | any `tower` stack — the layer the axum crate is built on | 1.88 |
+| [`dynamic-config-axum`](dynamic-config-axum) | axum 0.8 — a `tower` layer and a `Config<T>` extractor | 1.88 |
 | [`dynamic-config-actix`](dynamic-config-actix) | Actix Web 4 — a middleware and a `FromRequest` extractor | 1.88 |
-| [`dynamic-config-loco`](dynamic-config-loco) | [Loco](https://loco.rs) — an `Initializer`, over the axum crate | 1.94 |
-| [`dynamic-config-web-core`](dynamic-config-web-core) | the shared snapshot. You do not depend on this directly | 1.71 |
+| [`dynamic-config-loco`](dynamic-config-loco) | [Loco](https://loco.rs) — an `Initializer`, over the axum crate | 1.94 (loco's own floor) |
+| [`dynamic-config-web-core`](dynamic-config-web-core) | the shared snapshot. You do not depend on this directly | 1.88 |
 
-Each floor is measured against the crate's own dependency graph, not copied
-from a changelog, and CI checks each one against a real toolchain.
+1.88 is the organisation's one floor since the 0.2.x stabilisation
+round; loco alone sits higher because loco does. CI checks each row
+against the real toolchain.
 
 ## What these crates do not do
 
@@ -86,6 +87,8 @@ let sections = Sections::new()
     .section(Server::try_current)
     .section(move || handle.current());
 ```
+
+What you may build on and find unchanged tomorrow is written down: the [Compatibility Contract](https://dynamic-config-rs.github.io/compatibility.html).
 
 ## License
 

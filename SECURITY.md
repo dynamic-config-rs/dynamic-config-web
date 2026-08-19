@@ -39,6 +39,21 @@ its own advisory form and its own threat model.
   snapshot is an `Arc` in memory. Process isolation is the boundary; these
   crates do not add one.
 
+## Supported versions
+
+| Version | Supported |
+|---|---|
+| 0.3.x (all five crates) | ✅ the latest patch |
+| ≤ 0.2 | — end of life |
+
+Security fixes land on the **latest patch of the line above** and
+nothing is backported before 1.0: when a release ships, every prior
+patch of its line is end-of-life the same day. Older toolchains resolve
+older published versions through cargo's MSRV-aware resolver and are
+explicitly unsupported. After 1.0, the current and previous minor
+lines. The full promise lives in the engine book's
+[Compatibility Contract](https://dynamic-config-rs.github.io/compatibility.html).
+
 ## Standing rule
 
 Every open Dependabot or code-scanning alert is triaged before a release

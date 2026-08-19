@@ -18,6 +18,7 @@
 # Advanced
 
 - [Long-lived Connections](long-lived.md)
+- [Cookbook: The Whole Service](cookbook.md)
 
 # Reference
 

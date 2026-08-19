@@ -615,7 +615,7 @@ mod tests {
             .section_with_generation(
                 || {
                     Some(Arc::new(Features {
-                        cache: B.load(Ordering::SeqCst) % 2 == 0,
+                        cache: B.load(Ordering::SeqCst).is_multiple_of(2),
                     }))
                 },
                 || B.load(Ordering::SeqCst),

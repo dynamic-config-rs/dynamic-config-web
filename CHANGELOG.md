@@ -16,6 +16,14 @@ a separate dependency, named with a caret, and releases on its own schedule.
 
 ## 0.2.0 — 2026-08-18
 
+### Changed
+
+- **The engine floor is 0.8** — and that bump is why this release is
+  0.3.0: the extractors and layers carry engine types in their public
+  API, so the engine's breaking release (a `LoadSpec` field, MSRV
+  1.88) is breaking here by composition. Nothing in these crates' own
+  surface changed shape.
+
 ### Added
 
 - **`dynamic-config-tower`.** The snapshot layer as a plain `tower`

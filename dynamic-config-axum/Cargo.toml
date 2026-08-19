@@ -6,7 +6,7 @@ edition.workspace = true
 # rustc 1.78 or newer", and 1.80 is the first toolchain above that which
 # builds the whole graph. It is also the number `dynamic-config-server`
 # arrived at for axum 0.8.
-rust-version = "1.80"
+rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
 homepage.workspace = true

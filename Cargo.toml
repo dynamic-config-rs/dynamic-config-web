@@ -29,7 +29,7 @@ edition = "2021"
 # and no engine type, only `Arc<T>` — so it must never be the thing that
 # raises a dependent's floor. Each framework crate declares its own, higher,
 # because an adapter pays for what it pulls in.
-rust-version = "1.71"
+rust-version = "1.88"
 license = "MIT"
 repository = "https://github.com/dynamic-config-rs/dynamic-config-web"
 homepage = "https://github.com/dynamic-config-rs/dynamic-config-web"
@@ -44,7 +44,7 @@ exclude = ["tests/**"]
 [workspace.dependencies]
 # The engine, from crates.io. Caret: these crates are chosen *alongside* the
 # engine, and an exact pin would turn an engine upgrade into a wall.
-dynamic-config = { version = "0.6", default-features = false }
+dynamic-config = { version = "0.8", default-features = false }
 # The shared half. Published because cargo will not let a published crate
 # depend on one that is not; exact, because it moves with them in one
 # release.
