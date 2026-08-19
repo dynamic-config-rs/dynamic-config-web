@@ -14,6 +14,8 @@ a separate dependency, named with a caret, and releases on its own schedule.
 
 ## [Unreleased]
 
+## 0.3.0 — 2026-08-19
+
 ## 0.2.0 — 2026-08-18
 
 ### Changed

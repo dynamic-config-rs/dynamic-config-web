@@ -23,7 +23,7 @@ members = [
 ]
 
 [workspace.package]
-version = "0.2.0"
+version = "0.3.0"
 edition = "2021"
 # The floor `dynamic-config-web-core` actually has — it names no framework
 # and no engine type, only `Arc<T>` — so it must never be the thing that
@@ -48,8 +48,8 @@ dynamic-config = { version = "0.8", default-features = false }
 # The shared half. Published because cargo will not let a published crate
 # depend on one that is not; exact, because it moves with them in one
 # release.
-dynamic-config-web-core = { version = "=0.2.0", path = "dynamic-config-web-core" }
-dynamic-config-tower = { version = "=0.2.0", path = "dynamic-config-tower" }
+dynamic-config-web-core = { version = "=0.3.0", path = "dynamic-config-web-core" }
+dynamic-config-tower = { version = "=0.3.0", path = "dynamic-config-tower" }
 # The Loco crate is the axum one plus an `Initializer`, so it names it
 # the same way: exact, and moving in the same release.
-dynamic-config-axum = { version = "=0.2.0", path = "dynamic-config-axum" }
+dynamic-config-axum = { version = "=0.3.0", path = "dynamic-config-axum" }

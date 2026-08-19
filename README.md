@@ -13,7 +13,7 @@
 ```toml
 [dependencies]
 dynamic-config = { version = "0.6", features = ["json", "watch"] }
-dynamic-config-axum = "0.2.0"   # or -actix, or -loco
+dynamic-config-axum = "0.3.0"   # or -actix, or -loco
 ```
 
 ```rust,ignore
