@@ -1370,9 +1370,9 @@ checksum = "d0881ea181b1df73ff77ffaaf9c7544ecc11e82fba9b5f27b262a3c73a332555"
 
 [[package]]
 name = "dynamic-config"
-version = "0.6.3"
+version = "0.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1fa0e35e3f1b9aae279f67f82d7ae03805b83ff33a9605ca16d437d099360682"
+checksum = "583c63e4677f90e11d393fd86450c6e02cdd5b24bcf823f9591afa39eedce8c3"
 dependencies = [
  "arc-swap",
  "dynamic-config-macros",
@@ -1386,7 +1386,7 @@ dependencies = [
 
 [[package]]
 name = "dynamic-config-actix"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "actix-http",
  "actix-web",
@@ -1398,7 +1398,7 @@ dependencies = [
 
 [[package]]
 name = "dynamic-config-axum"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "axum",
  "dynamic-config",
@@ -1414,7 +1414,7 @@ dependencies = [
 
 [[package]]
 name = "dynamic-config-loco"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "async-trait",
  "axum",
@@ -1431,9 +1431,9 @@ dependencies = [
 
 [[package]]
 name = "dynamic-config-macros"
-version = "0.6.3"
+version = "0.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "324a05a24a21de04f48925a4e100a97fb99781c988a3a7bc39e33689c083a767"
+checksum = "4914a2922931028329295898184036a863248e014f5fbeca861efc9e15aca395"
 dependencies = [
  "proc-macro-crate",
  "proc-macro2",
@@ -1443,7 +1443,7 @@ dependencies = [
 
 [[package]]
 name = "dynamic-config-tower"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "bytes",
  "dynamic-config",
@@ -1458,7 +1458,7 @@ dependencies = [
 
 [[package]]
 name = "dynamic-config-web-core"
-version = "0.2.0"
+version = "0.3.0"
 
 [[package]]
 name = "ego-tree"
@@ -4094,7 +4094,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "32497e9a4c7b38532efcdebeef879707aa9f794296a4f0244f6f69e9bc8574bd"
 dependencies = [
  "fastrand",
- "getrandom 0.4.3",
+ "getrandom 0.3.4",
  "once_cell",
  "rustix",
  "windows-sys 0.61.2",

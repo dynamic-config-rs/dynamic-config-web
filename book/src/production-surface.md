@@ -10,7 +10,11 @@ Two questions, not one. `/healthz` says the process is alive and must
 not fail on configuration — a process that cannot reload should be taken
 out of rotation, not restarted into reading the same broken file.
 `/readyz` is where *nothing ever loaded* and *the reloads are failing*
-answer 503.
+answer 503. The definitions behind both — last-known-good means
+*ready*, degraded is a field rather than a state — are the engine
+book's [Readiness & Liveness](https://dynamic-config-rs.github.io/readiness.html)
+contract, and the metric names further down are its
+[Metrics Contract](https://dynamic-config-rs.github.io/metrics-contract.html)'s.
 
 ```rust,ignore
 use axum::{http::StatusCode, Json};

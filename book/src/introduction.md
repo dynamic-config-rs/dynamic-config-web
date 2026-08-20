@@ -41,9 +41,9 @@ async fn handler(
 
 | Crate | What it is | MSRV |
 |---|---|---|
-| `dynamic-config-web-core` | the snapshot and the section list — no framework | 1.71 |
-| `dynamic-config-tower` | the layer/service pair over any `tower` stack | 1.71 |
-| `dynamic-config-axum` | the tower layer re-exported + a `FromRequestParts` extractor | 1.80 |
+| `dynamic-config-web-core` | the snapshot and the section list — no framework | 1.88 |
+| `dynamic-config-tower` | the layer/service pair over any `tower` stack | 1.88 |
+| `dynamic-config-axum` | the tower layer re-exported + a `FromRequestParts` extractor | 1.88 |
 | `dynamic-config-actix` | the same two pieces through Actix's `Transform`/`FromRequest` | 1.88 |
 | `dynamic-config-loco` | the `Initializer` Loco asks a library for, over the axum crate | 1.94 |
 
