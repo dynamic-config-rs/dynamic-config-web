@@ -39,13 +39,19 @@ docs:
 
 # Each crate against its declared floor. A floor nobody compiles against is
 # a number in a manifest.
+# The floor check needs its own lockfile resolution, and the PINNED one
+# must survive it: the fallback resolver undoes the advisory pins the
+# moment it regenerates, which is how a green `just check` once handed
+# a red lockfile to a release commit.
 msrv:
+    cp Cargo.lock Cargo.lock.pinned
     cargo +stable generate-lockfile
     cargo +1.88 check -p dynamic-config-web-core --locked
     cargo +1.88 check -p dynamic-config-tower --locked
     cargo +1.88 check -p dynamic-config-axum --locked
     cargo +1.88 check -p dynamic-config-actix --locked
     cargo +1.94 check -p dynamic-config-loco --locked
+    mv Cargo.lock.pinned Cargo.lock
 
 # What the dependency graph resolves to, for the advisory scan.
 audit:
