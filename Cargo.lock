@@ -922,6 +922,18 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cc14f565cf027a105f7a44ccf9e5b424348421a1d8952a8fc9d499d313107789"
 
 [[package]]
+name = "config"
+version = "0.15.25"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b85f248a4de22d204ceabc6299d89d2c70fbd7f09fea53c06c852369652d8139"
+dependencies = [
+ "pathdiff",
+ "serde_core",
+ "serde_json",
+ "winnow 1.0.4",
+]
+
+[[package]]
 name = "const-oid"
 version = "0.10.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1370,11 +1382,12 @@ checksum = "d0881ea181b1df73ff77ffaaf9c7544ecc11e82fba9b5f27b262a3c73a332555"
 
 [[package]]
 name = "dynamic-config"
-version = "0.8.0"
+version = "0.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "583c63e4677f90e11d393fd86450c6e02cdd5b24bcf823f9591afa39eedce8c3"
+checksum = "0245845d160b0a450130722105a94dc488893a4ff862f275d38576ad353bbb75"
 dependencies = [
  "arc-swap",
+ "config",
  "dynamic-config-macros",
  "figment",
  "loom",
@@ -1431,9 +1444,9 @@ dependencies = [
 
 [[package]]
 name = "dynamic-config-macros"
-version = "0.8.0"
+version = "0.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4914a2922931028329295898184036a863248e014f5fbeca861efc9e15aca395"
+checksum = "31bc24ebed394ef05aa92e1f7b8f46b801b0ccf41890440091364be07e4abe40"
 dependencies = [
  "proc-macro-crate",
  "proc-macro2",
@@ -2835,6 +2848,12 @@ dependencies = [
  "rand_core 0.6.4",
  "subtle",
 ]
+
+[[package]]
+name = "pathdiff"
+version = "0.2.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "df94ce210e5bc13cb6651479fa48d14f601d9858cfe0467f43ae157023b938d3"
 
 [[package]]
 name = "pear"

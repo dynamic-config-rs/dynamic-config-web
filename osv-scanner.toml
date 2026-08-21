@@ -12,3 +12,25 @@
 #
 # Empty, and expected to stay small: these crates have four direct
 # dependencies between them.
+
+[[IgnoredVulns]]
+id = "RUSTSEC-2026-0235"
+reason = """
+rkyv 0.7.46, an out-of-bounds read reachable through `access` and
+`from_bytes` on an archive carrying conflicting shared-pointer metadata.
+The fix is 0.8.17, and this workspace cannot take it — but it does not
+need to: **rkyv is in the lockfile and in no build.** It is an optional
+dependency of rust_decimal (loco-rs -> byte-unit -> rust_decimal), and
+nothing here turns that feature on: `cargo tree -i rkyv` finds no path,
+with default features and with --all-features alike, which is why
+cargo-deny — which walks the built graph rather than the lockfile — is
+silent about it and this file is not.
+
+Nothing in this workspace deserializes an rkyv archive at all, let alone
+an untrusted one.
+
+Expires when rust_decimal moves to rkyv 0.8, or when byte-unit stops
+depending on rust_decimal. Re-check if anything here ever enables that
+feature: the reasoning above is about reachability, and enabling it makes
+the advisory this repository's to answer.
+"""

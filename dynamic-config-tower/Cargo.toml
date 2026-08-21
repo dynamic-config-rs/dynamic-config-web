@@ -40,7 +40,7 @@ bytes = "1.11"
 # `-Z direct-minimal-versions` every direct floor is pinned exactly, so
 # a lower one here is a resolver contradiction, not a preference.
 tokio = { version = "1.52", features = ["rt-multi-thread", "macros"] }
-serde = { version = "1.0.221", features = ["derive"] }
+serde = { version = "1.0.228", features = ["derive"] }
 tempfile = "3"
 
 [package.metadata.docs.rs]
