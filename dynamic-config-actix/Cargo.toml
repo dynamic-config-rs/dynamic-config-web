@@ -34,7 +34,7 @@ actix-web = "4.9"
 # `actix-web 4.9` requires `actix-http ^3.7`, so a bare "3" was a floor
 # the workspace could never resolve to.
 actix-http = "3.7"
-serde = { version = "1.0.221", features = ["derive"] }
+serde = { version = "1.0.228", features = ["derive"] }
 tempfile = "3"
 
 [package.metadata.docs.rs]

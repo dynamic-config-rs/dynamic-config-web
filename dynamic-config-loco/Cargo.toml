@@ -47,7 +47,7 @@ axum = { version = "0.8.1", features = ["json", "tokio", "http1"] }
 # this crate depends on it by path, and one workspace resolves once.
 tokio = { version = "1.52", features = ["rt-multi-thread", "macros"] }
 tower = { version = "0.5.2", features = ["util"] }
-serde = { version = "1.0.221", features = ["derive"] }
+serde = { version = "1.0.228", features = ["derive"] }
 http-body-util = "0.1"
 tempfile = "3"
 

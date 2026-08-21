@@ -30,8 +30,6 @@ dynamic-config-tower = { workspace = true }
 # actually resolve to is a number the `minimal-versions` job would rightly
 # refuse, and 0.8.0 has been superseded since.
 axum = { version = "0.8.1", default-features = false }
-# `axum 0.8` itself requires `tower ^0.5.2`, so 0.5 was never resolvable.
-tower = { version = "0.5.2", default-features = false }
 
 [dev-dependencies]
 dynamic-config = { workspace = true, features = ["json", "watch"] }
@@ -40,11 +38,16 @@ axum = { version = "0.8.1", features = ["json", "tokio", "http1"] }
 # Loco's `opendal` requires `^1.52`; one workspace resolves once. A dev-only
 # floor, so nothing a user of this crate installs is affected.
 tokio = { version = "1.52", features = ["rt-multi-thread", "macros", "time"] }
+# Only the tests and the examples name `tower` — they drive a service
+# directly through `ServiceExt`. The library re-exports the layer from
+# `dynamic-config-tower` and never names it, so it does not belong in the
+# graph of anything that depends on this crate. `0.5.2` because `axum 0.8`
+# requires it, so 0.5 was never resolvable.
 tower = { version = "0.5.2", features = ["util"] }
-serde = { version = "1.0.221", features = ["derive"] }
+serde = { version = "1.0.228", features = ["derive"] }
 http-body-util = "0.1"
 tempfile = "3"
-serde_json = "1.0.127"
+serde_json = "1.0.149"
 
 [package.metadata.docs.rs]
 all-features = true

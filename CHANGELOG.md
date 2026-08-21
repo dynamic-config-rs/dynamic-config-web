@@ -14,6 +14,20 @@ a separate dependency, named with a caret, and releases on its own schedule.
 
 ## [Unreleased]
 
+## 0.3.1 — 2026-08-21
+
+### Changed
+
+- **The engine floor is 0.9**, and `serde` / `serde_json` move to
+  `1.0.228` / `1.0.149` behind it — the floors the engine's fold
+  requires. Nothing in these crates' own surface changed shape.
+
+- **`tower` left `dynamic-config-axum`'s dependencies** for its
+  dev-dependencies, where its only users were: the tests and the
+  examples name it directly, the library re-exports the layer from
+  `dynamic-config-tower` and never names it. A crate that depends on
+  this one no longer compiles `tower` on its account.
+
 ## 0.3.0 — 2026-08-19
 
 ## 0.2.0 — 2026-08-18
