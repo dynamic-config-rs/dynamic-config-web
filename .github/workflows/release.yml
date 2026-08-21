@@ -66,7 +66,7 @@ jobs:
       # Only against what is already published: a first release has nothing
       # to compare with, and `--exclude` is derived rather than hardcoded so
       # the list cannot go stale.
-      - uses: taiki-e/install-action@7f4eb899022d8fe70b20c4f3de697aa85c309026 # v2
+      - uses: taiki-e/install-action@5b4d68e2e660441203ab128a23676f1e4faf1532 # v2
         with:
           tool: cargo-semver-checks
       - name: semver against what is on crates.io
