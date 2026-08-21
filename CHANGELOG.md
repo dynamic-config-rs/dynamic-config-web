@@ -14,6 +14,8 @@ a separate dependency, named with a caret, and releases on its own schedule.
 
 ## [Unreleased]
 
+## 0.3.1 — 2026-08-21
+
 ### Changed
 
 - **The engine floor is 0.9**, and `serde` / `serde_json` move to
