@@ -1382,9 +1382,9 @@ checksum = "d0881ea181b1df73ff77ffaaf9c7544ecc11e82fba9b5f27b262a3c73a332555"
 
 [[package]]
 name = "dynamic-config"
-version = "0.9.0"
+version = "0.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0245845d160b0a450130722105a94dc488893a4ff862f275d38576ad353bbb75"
+checksum = "5db0b6b9af6670ab2ccfd9cf30659be255ff0e9eda3da1ad086adf9fe3bc3e51"
 dependencies = [
  "arc-swap",
  "config",
@@ -1394,6 +1394,7 @@ dependencies = [
  "notify",
  "serde",
  "serde_json",
+ "sha2",
  "shuttle",
 ]
 
@@ -1444,9 +1445,9 @@ dependencies = [
 
 [[package]]
 name = "dynamic-config-macros"
-version = "0.9.0"
+version = "0.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "31bc24ebed394ef05aa92e1f7b8f46b801b0ccf41890440091364be07e4abe40"
+checksum = "8d46acd9699b544599c36cdc53d91088d7325119f0b15b530546ba0451fea630"
 dependencies = [
  "proc-macro-crate",
  "proc-macro2",
@@ -3791,6 +3792,17 @@ dependencies = [
  "cfg-if",
  "cpufeatures 0.3.0",
  "digest 0.11.3",
+]
+
+[[package]]
+name = "sha2"
+version = "0.10.9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a7507d819769d01a365ab707794a4084392c824f54a7a6a7862f8c3d0892b283"
+dependencies = [
+ "cfg-if",
+ "cpufeatures 0.2.17",
+ "digest 0.10.7",
 ]
 
 [[package]]
