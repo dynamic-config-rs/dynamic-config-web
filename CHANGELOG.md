@@ -14,6 +14,12 @@ a separate dependency, named with a caret, and releases on its own schedule.
 
 ## [Unreleased]
 
+## 0.3.2 — 2026-08-23
+
+### Changed
+
+- The engine floor moves to **0.10**.
+
 ## 0.3.1 — 2026-08-21
 
 ### Changed

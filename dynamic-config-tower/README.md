@@ -5,7 +5,7 @@ configuration per request, as a plain `tower` layer.
 
 ```toml
 [dependencies]
-dynamic-config-tower = "0.3.1"
+dynamic-config-tower = "0.3.2"
 ```
 
 ```rust,ignore
