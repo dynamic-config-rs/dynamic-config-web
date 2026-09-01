@@ -66,7 +66,7 @@ jobs:
       # Only against what is already published: a first release has nothing
       # to compare with, and `--exclude` is derived rather than hardcoded so
       # the list cannot go stale.
-      - uses: taiki-e/install-action@7f4eb899022d8fe70b20c4f3de697aa85c309026 # v2
+      - uses: taiki-e/install-action@742a3317eac7bd62f91cd888b4eead5e784ba833 # v2
         with:
           tool: cargo-semver-checks
       - name: semver against what is on crates.io
@@ -204,7 +204,7 @@ jobs:
           find . -name "*.cdx.json" -not -path "./sbom/*" -exec mv {} sbom/ \;
 
           ls -la sbom
-      - uses: softprops/action-gh-release@3d0d9888cb7fd7b750713d6e236d1fcb99157228 # v3
+      - uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3
         with:
           tag_name: v${{ needs.decide.outputs.version }}
           name: v${{ needs.decide.outputs.version }}
