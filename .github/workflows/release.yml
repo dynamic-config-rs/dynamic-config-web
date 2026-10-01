@@ -47,7 +47,7 @@ jobs:
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-      - uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772 # master
+      - uses: dtolnay/rust-toolchain@02cb101ec7c40f2c49e1d9714d64511d8e1b74de # master
         with:
           toolchain: stable
           components: rustfmt, clippy
@@ -66,7 +66,7 @@ jobs:
       # Only against what is already published: a first release has nothing
       # to compare with, and `--exclude` is derived rather than hardcoded so
       # the list cannot go stale.
-      - uses: taiki-e/install-action@7f4eb899022d8fe70b20c4f3de697aa85c309026 # v2
+      - uses: taiki-e/install-action@4cef1412cce204788f482e778a0b9187f9626a29 # v2
         with:
           tool: cargo-semver-checks
       - name: semver against what is on crates.io
@@ -117,7 +117,7 @@ jobs:
     environment: crates-io
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-      - uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772 # master
+      - uses: dtolnay/rust-toolchain@02cb101ec7c40f2c49e1d9714d64511d8e1b74de # master
         with:
           toolchain: stable
       - name: publish, in dependency order
@@ -189,7 +189,7 @@ jobs:
       # trade the engine's release makes, for the same reason: an SBOM that
       # fails a build fails it for a fact about somebody else's published
       # package, and the advisory gate in security.yml is where that lives.
-      - uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772 # master
+      - uses: dtolnay/rust-toolchain@02cb101ec7c40f2c49e1d9714d64511d8e1b74de # master
         with:
           toolchain: stable
       - name: the bill of materials
@@ -204,7 +204,7 @@ jobs:
           find . -name "*.cdx.json" -not -path "./sbom/*" -exec mv {} sbom/ \;
 
           ls -la sbom
-      - uses: softprops/action-gh-release@3d0d9888cb7fd7b750713d6e236d1fcb99157228 # v3
+      - uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3
         with:
           tag_name: v${{ needs.decide.outputs.version }}
           name: v${{ needs.decide.outputs.version }}
